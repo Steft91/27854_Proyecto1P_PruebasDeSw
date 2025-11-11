@@ -1,0 +1,36 @@
+const js = require('@eslint/js');
+const globals = require('globals');
+
+module.exports = [
+    {
+        ignores: ['node_modules/', 'coverage/'],
+    },
+    {
+        files: ['src/**/*.js'],
+        languageOptions: {
+            ecmaVersion: 2021,
+            sourceType: 'commonjs',
+            globals: {
+                ...globals.node
+            }
+        },
+        rules: {
+            ...js.configs.recommended.rules,
+            semi: ['error', 'always'],
+            quotes: ['error', 'single'],
+        }
+    },
+    {
+        files: ['**/*.test.js'],
+        languageOptions: {
+            globals: {
+                ...globals.jest
+            }
+        },
+        rules: {
+            ...js.configs.recommended.rules,
+            semi: ['error', 'always'],
+            quotes: ['error', 'single'],
+        }
+    },
+];
