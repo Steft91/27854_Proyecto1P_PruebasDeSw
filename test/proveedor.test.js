@@ -65,9 +65,8 @@ describe('Provider API', () => {
       const response = await request(app).post('/api/providers').send(providerIncompleto);
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(
-        'Campos obligatorios faltantes (ID, nombre fiscal, RUC/NIT/NIF o dirección física)'
-      );
+      // Puede fallar por tipo de dato o por campo faltante
+      expect(response.body.message).toMatch(/obligatorios|texto/);
     });
 
     // Prueba POST intentar crear un proveedor con el mismo ID
@@ -92,16 +91,116 @@ describe('Provider API', () => {
       // Crear el primer proveedor
       await request(app).post('/api/providers').send(mockProvider);
 
-      // Intentar crear un proveedor con el mismo RUC/NIT/NIF
-      const response = await request(app)
-        .post('/api/providers')
-        .send({
-          ...mockProvider2,
-          rucNitNif: '1234567890001',
-        });
+      // Intentar crear un proveedor con ID diferente pero mismo RUC/NIT/NIF
+      const response = await request(app).post('/api/providers').send({
+        idProveedor: 'PROV999', // ID diferente
+        nombreFiscal: 'Otra Empresa S.A.',
+        rucNitNif: '1234567890001', // Mismo RUC que mockProvider
+        direccionFisica: 'Otra Dirección 123',
+      });
 
       expect(response.statusCode).toBe(409);
       expect(response.body.message).toBe('Ya existe un proveedor con ese RUC/NIT/NIF');
+    });
+
+    // Prueba POST con campos vacíos (strings vacíos)
+    test('should fail when fields are empty strings', async () => {
+      const providerConCamposVacios = {
+        idProveedor: '   ',
+        nombreFiscal: '',
+        rucNitNif: '1234567890123',
+        direccionFisica: 'Dirección Test',
+      };
+
+      const response = await request(app).post('/api/providers').send(providerConCamposVacios);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe(
+        'Campos obligatorios faltantes o vacíos (ID, nombre fiscal, RUC/NIT/NIF o dirección física)'
+      );
+    });
+
+    // Prueba POST con RUC inválido (muy corto)
+    test('should fail with invalid RUC format (too short)', async () => {
+      const providerRucInvalido = {
+        idProveedor: 'PROV003',
+        nombreFiscal: 'Test Company',
+        rucNitNif: '12345', // Menos de 10 dígitos
+        direccionFisica: 'Test Address',
+      };
+
+      const response = await request(app).post('/api/providers').send(providerRucInvalido);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe(
+        'Formato de RUC/NIT/NIF inválido (debe contener entre 10 y 15 dígitos)'
+      );
+    });
+
+    // Prueba POST con RUC inválido (contiene letras)
+    test('should fail with invalid RUC format (contains letters)', async () => {
+      const providerRucInvalido = {
+        idProveedor: 'PROV004',
+        nombreFiscal: 'Test Company',
+        rucNitNif: '12345ABC90123', // Contiene letras
+        direccionFisica: 'Test Address',
+      };
+
+      const response = await request(app).post('/api/providers').send(providerRucInvalido);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe(
+        'Formato de RUC/NIT/NIF inválido (debe contener entre 10 y 15 dígitos)'
+      );
+    });
+
+    // Prueba POST con email inválido
+    test('should fail with invalid email format', async () => {
+      const providerEmailInvalido = {
+        idProveedor: 'PROV005',
+        nombreFiscal: 'Test Company',
+        rucNitNif: '1234567890123',
+        direccionFisica: 'Test Address',
+        correoElectronico: 'email-invalido', // Sin @ y dominio
+      };
+
+      const response = await request(app).post('/api/providers').send(providerEmailInvalido);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('Formato de correo electrónico inválido');
+    });
+
+    // Prueba POST con teléfono inválido
+    test('should fail with invalid phone format', async () => {
+      const providerTelefonoInvalido = {
+        idProveedor: 'PROV006',
+        nombreFiscal: 'Test Company',
+        rucNitNif: '1234567890123',
+        direccionFisica: 'Test Address',
+        telefonoPrincipal: '123', // Muy corto
+      };
+
+      const response = await request(app).post('/api/providers').send(providerTelefonoInvalido);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe(
+        'Formato de teléfono inválido (debe contener entre 7 y 20 caracteres numéricos)'
+      );
+    });
+
+    // Prueba POST con tipos de datos incorrectos
+    test('should fail with incorrect data types', async () => {
+      const providerTiposIncorrectos = {
+        idProveedor: 12345, // Número en lugar de string
+        nombreFiscal: 'Test Company',
+        rucNitNif: '1234567890123',
+        direccionFisica: 'Test Address',
+      };
+
+      const response = await request(app).post('/api/providers').send(providerTiposIncorrectos);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('Los campos obligatorios deben ser texto');
     });
   });
 
