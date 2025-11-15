@@ -74,6 +74,34 @@ describe('Empleado API', () => {
             expect(response.statusCode).toBe(409);
             expect(response.body.message).toBe('Ya existe un empleado con esa cédula');
         });
+
+        test('should fail because cedula is invalid', async () => {
+            const empleadoCedulaInvalida = {
+                cedulaEmpleado: '12345',
+                nombreEmpleado: 'Test',
+                celularEmpleado: '0987654321',
+                sueldoEmpleado: 1500
+            };
+
+            const response = await request(app).post('/api/empleados').send(empleadoCedulaInvalida);
+            
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('Cédula ecuatoriana inválida (debe tener 10 dígitos)');
+        });
+
+        test('should fail because salary is negative', async () => {
+            const empleadoSueldoNegativo = {
+                cedulaEmpleado: '1111111111',
+                nombreEmpleado: 'Test',
+                celularEmpleado: '0987654321',
+                sueldoEmpleado: -100
+            };
+
+            const response = await request(app).post('/api/empleados').send(empleadoSueldoNegativo);
+            
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('El sueldo debe ser mayor a 0');
+        });
     });
 
     describe('PUT /api/empleados/:cedula', () => {
@@ -114,6 +142,39 @@ describe('Empleado API', () => {
             expect(res.statusCode).toBe(404);
             expect(res.body.message).toBe('Empleado no encontrado');
         });
+
+        test('should update only new data and preserve the old ones', async () => {
+            await request(app).post('/api/empleados').send(mockEmpleado);
+            
+            const datosActualizadosParciales = {
+                newEmailEmpleado: 'nuevo@email.com',
+                newSueldoEmpleado: 3000
+            };
+
+            const response = await request(app)
+                .put(`/api/empleados/${mockEmpleado.cedulaEmpleado}`)
+                .send(datosActualizadosParciales);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.empleado.emailEmpleado).toBe('nuevo@email.com');
+            expect(response.body.empleado.sueldoEmpleado).toBe(3000);
+            expect(response.body.empleado.nombreEmpleado).toBe(mockEmpleado.nombreEmpleado);
+        });
+
+        test('should fail when updating with negative salary', async () => {
+            await request(app).post('/api/empleados').send(mockEmpleado);
+
+            const datosInvalidos = {
+                newSueldoEmpleado: -500
+            };
+
+            const response = await request(app)
+                .put(`/api/empleados/${mockEmpleado.cedulaEmpleado}`)
+                .send(datosInvalidos);
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('El sueldo debe ser mayor a 0');
+        });
     });
 
     describe('DELETE /api/empleados/:cedula', () => {
@@ -135,6 +196,20 @@ describe('Empleado API', () => {
 
             expect(response.statusCode).toBe(404);
             expect(response.body.message).toBe('Empleado no encontrado');
+        });
+
+        test('should verify empleado list is updated after deletion', async () => {
+            await request(app).post('/api/empleados').send(mockEmpleado);
+            await request(app).post('/api/empleados').send(mockEmpleado2);
+
+            let listResponse = await request(app).get('/api/empleados');
+            expect(listResponse.body.length).toBe(2);
+
+            await request(app).delete(`/api/empleados/${mockEmpleado.cedulaEmpleado}`);
+
+            listResponse = await request(app).get('/api/empleados');
+            expect(listResponse.body.length).toBe(1);
+            expect(listResponse.body[0].cedulaEmpleado).toBe(mockEmpleado2.cedulaEmpleado);
         });
     });
 });
