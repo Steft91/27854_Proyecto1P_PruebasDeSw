@@ -38,6 +38,12 @@ function createNewProduct(req, res) {
     if (typeof codeProduct !== 'string') {
         return res.status(400).json({ message: 'El código del producto debe ser texto' });
     }
+    // Validar formato LETRAS + NÚMEROS (ej: PROD001)
+    if (!/^[A-Za-z]{3,10}[0-9]{1,10}$/.test(codeProduct.trim())) {
+    return res.status(400).json({
+        message: 'El código del producto debe tener el formato LETRAS + NUMEROS (ej: PROD001)',
+    });
+    }
     if (typeof nameProduct !== 'string') {
         return res.status(400).json({ message: 'El nombre del producto debe ser texto' });
     }
@@ -50,6 +56,7 @@ function createNewProduct(req, res) {
     if (! Number.isInteger(stockProduct) || typeof stockProduct !== 'number' || isNaN(stockProduct) || stockProduct < 0) {
         return res.status(400).json({ message: 'El stock del producto debe ser un número entero mayor o igual a 0' });
     }
+
     // VALIDACIONES DE STRINGS VACÍOS
     if (!codeProduct.trim()) {
         return res.status(400).json({ message: 'El código del producto no puede estar vacío' });
@@ -115,6 +122,15 @@ function updateExistingProduct(req, res) {
     }
 
     // VALIDACIONES
+
+    if (newCodeProduct !== undefined) {
+        if (typeof newCodeProduct !== 'string' || !/^[A-Za-z]{3,10}[0-9]{1,10}$/.test(newCodeProduct.trim())) {
+            return res.status(400).json({
+            message: 'Formato de código inválido (use LETRAS + NUMEROS, ej: PROD001)',
+            });
+        }
+        }
+
 
     if (newNameProduct !== undefined && typeof newNameProduct !== 'string' ){
         return res.status(400).json({ message: 'El nombre del producto debe ser texto' });
