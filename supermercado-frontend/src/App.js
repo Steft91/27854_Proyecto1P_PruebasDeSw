@@ -121,7 +121,7 @@ function App() {
   const guardarProducto = async (producto) => {
     try {
       if (editProducto) {
-        await productoService.actualizarProducto(editProducto.codigoProducto, producto);
+        await productoService.actualizarProducto(editProducto.codeProduct, producto);
       } else {
         await productoService.crearProducto(producto);
       }
@@ -155,7 +155,7 @@ function App() {
   const guardarEmpleado = async (empleado) => {
     try {
       if (editEmpleado) {
-        await empleadoService.actualizarEmpleado(editEmpleado.codigoEmpleado, empleado);
+        await empleadoService.actualizarEmpleado(editEmpleado.cedulaEmpleado, empleado);
       } else {
         await empleadoService.crearEmpleado(empleado);
       }

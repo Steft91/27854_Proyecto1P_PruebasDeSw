@@ -2,23 +2,21 @@ import React, { useState, useEffect } from 'react';
 
 function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
   const [formData, setFormData] = useState({
-    codigoProducto: '',
-    nombreProducto: '',
-    descripcionProducto: '',
-    precioProducto: '',
-    stockProducto: '',
-    categoriaProducto: '',
+    codeProduct: '',
+    nameProduct: '',
+    descriptionProduct: '',
+    priceProduct: '',
+    stockProduct: '',
   });
 
   useEffect(() => {
     if (productoEditar) {
       setFormData({
-        codigoProducto: productoEditar.codigoProducto || '',
-        nombreProducto: productoEditar.nombreProducto || '',
-        descripcionProducto: productoEditar.descripcionProducto || '',
-        precioProducto: productoEditar.precioProducto || '',
-        stockProducto: productoEditar.stockProducto || '',
-        categoriaProducto: productoEditar.categoriaProducto || '',
+        codeProduct: productoEditar.codeProduct || '',
+        nameProduct: productoEditar.nameProduct || '',
+        descriptionProduct: productoEditar.descriptionProduct || '',
+        priceProduct: productoEditar.priceProduct || '',
+        stockProduct: productoEditar.stockProduct || '',
       });
     }
   }, [productoEditar]);
@@ -35,29 +33,30 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
     e.preventDefault();
 
     if (
-      !formData.codigoProducto ||
-      !formData.nombreProducto ||
-      !formData.precioProducto ||
-      !formData.stockProducto
+      !formData.codeProduct ||
+      !formData.nameProduct ||
+      !formData.priceProduct ||
+      !formData.stockProduct
     ) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
 
     const dataToSend = {
-      ...formData,
-      precioProducto: parseFloat(formData.precioProducto),
-      stockProducto: parseInt(formData.stockProducto, 10),
+      codeProduct: formData.codeProduct,
+      nameProduct: formData.nameProduct,
+      descriptionProduct: formData.descriptionProduct,
+      priceProduct: parseFloat(formData.priceProduct),
+      stockProduct: parseInt(formData.stockProduct, 10),
     };
 
     if (productoEditar) {
       // Actualizar - enviamos solo los campos con prefijo 'new'
       const datosActualizados = {
-        newNombreProducto: dataToSend.nombreProducto,
-        newDescripcionProducto: dataToSend.descripcionProducto,
-        newPrecioProducto: dataToSend.precioProducto,
-        newStockProducto: dataToSend.stockProducto,
-        newCategoriaProducto: dataToSend.categoriaProducto,
+        newNameProduct: dataToSend.nameProduct,
+        newDescriptionProduct: dataToSend.descriptionProduct,
+        newPriceProduct: dataToSend.priceProduct,
+        newStockProduct: dataToSend.stockProduct,
       };
       onGuardar(datosActualizados);
     } else {
@@ -67,23 +66,21 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
 
     // Limpiar formulario
     setFormData({
-      codigoProducto: '',
-      nombreProducto: '',
-      descripcionProducto: '',
-      precioProducto: '',
-      stockProducto: '',
-      categoriaProducto: '',
+      codeProduct: '',
+      nameProduct: '',
+      descriptionProduct: '',
+      priceProduct: '',
+      stockProduct: '',
     });
   };
 
   const handleCancelar = () => {
     setFormData({
-      codigoProducto: '',
-      nombreProducto: '',
-      descripcionProducto: '',
-      precioProducto: '',
-      stockProducto: '',
-      categoriaProducto: '',
+      codeProduct: '',
+      nameProduct: '',
+      descriptionProduct: '',
+      priceProduct: '',
+      stockProduct: '',
     });
     onCancelar();
   };
@@ -94,14 +91,14 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
       <form onSubmit={handleSubmit} className="data-form">
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="codigoProducto">
+            <label htmlFor="codeProduct">
               Código Producto <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="codigoProducto"
-              name="codigoProducto"
-              value={formData.codigoProducto}
+              id="codeProduct"
+              name="codeProduct"
+              value={formData.codeProduct}
               onChange={handleChange}
               disabled={productoEditar ? true : false}
               placeholder="Ej: PROD001"
@@ -110,14 +107,14 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="nombreProducto">
+            <label htmlFor="nameProduct">
               Nombre <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="nombreProducto"
-              name="nombreProducto"
-              value={formData.nombreProducto}
+              id="nameProduct"
+              name="nameProduct"
+              value={formData.nameProduct}
               onChange={handleChange}
               placeholder="Ej: Pan Integral"
               required
@@ -126,11 +123,11 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="descripcionProducto">Descripción</label>
+          <label htmlFor="descriptionProduct">Descripción</label>
           <textarea
-            id="descripcionProducto"
-            name="descripcionProducto"
-            value={formData.descripcionProducto}
+            id="descriptionProduct"
+            name="descriptionProduct"
+            value={formData.descriptionProduct}
             onChange={handleChange}
             placeholder="Descripción del producto"
             rows="3"
@@ -139,14 +136,14 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="precioProducto">
+            <label htmlFor="priceProduct">
               Precio <span className="required">*</span>
             </label>
             <input
               type="number"
-              id="precioProducto"
-              name="precioProducto"
-              value={formData.precioProducto}
+              id="priceProduct"
+              name="priceProduct"
+              value={formData.priceProduct}
               onChange={handleChange}
               placeholder="Ej: 2.50"
               step="0.01"
@@ -156,30 +153,18 @@ function ProductoForm({ onGuardar, productoEditar, onCancelar }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="stockProducto">
+            <label htmlFor="stockProduct">
               Stock <span className="required">*</span>
             </label>
             <input
               type="number"
-              id="stockProducto"
-              name="stockProducto"
-              value={formData.stockProducto}
+              id="stockProduct"
+              name="stockProduct"
+              value={formData.stockProduct}
               onChange={handleChange}
               placeholder="Ej: 100"
               min="0"
               required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="categoriaProducto">Categoría</label>
-            <input
-              type="text"
-              id="categoriaProducto"
-              name="categoriaProducto"
-              value={formData.categoriaProducto}
-              onChange={handleChange}
-              placeholder="Ej: Panadería"
             />
           </div>
         </div>

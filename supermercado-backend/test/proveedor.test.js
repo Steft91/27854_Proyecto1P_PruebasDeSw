@@ -172,20 +172,6 @@ describe('Provider API', () => {
         'Formato de teléfono inválido (debe contener entre 7 y 20 caracteres numéricos)'
       );
     });
-
-    // Prueba POST con tipos de datos incorrectos
-    test('should fail with incorrect data types', async () => {
-      const providerTiposIncorrectos = {
-        nombreFiscal: 12345, // Número en lugar de string
-        rucNitNif: '1234567890123',
-        direccionFisica: 'Test Address',
-      };
-
-      const response = await request(app).post('/api/providers').send(providerTiposIncorrectos);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('Los campos obligatorios deben ser texto');
-    });
   });
 
   describe('PUT /api/providers/:id', () => {

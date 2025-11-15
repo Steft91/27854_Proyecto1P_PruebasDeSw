@@ -40,19 +40,8 @@ function createNewProvider(req, res) {
     contactoPuesto,
   } = req.body;
 
-  // Validación de tipos de datos
-  if (
-    typeof nombreFiscal !== 'string' ||
-    typeof rucNitNif !== 'string' ||
-    typeof direccionFisica !== 'string'
-  ) {
-    return res.status(400).json({
-      message: 'Los campos obligatorios deben ser texto',
-    });
-  }
-
-  // Validación de campos obligatorios y strings vacíos
-  if (!nombreFiscal.trim() || !rucNitNif.trim() || !direccionFisica.trim()) {
+  // Validación de campos obligatorios (igual que cliente, empleado y producto)
+  if (!nombreFiscal || !rucNitNif || !direccionFisica) {
     return res.status(400).json({
       message:
         'Campos obligatorios faltantes o vacíos (nombre fiscal, RUC/NIT/NIF o dirección física)',

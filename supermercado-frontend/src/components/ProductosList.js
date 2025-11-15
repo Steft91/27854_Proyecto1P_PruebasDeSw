@@ -16,27 +16,22 @@ function ProductosList({ productos, onEliminar, onEditar }) {
                 <th>Descripción</th>
                 <th>Precio</th>
                 <th>Stock</th>
-                <th>Categoría</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {productos.map((producto) => (
-                <tr key={producto.codigoProducto}>
-                  <td>{producto.codigoProducto}</td>
-                  <td>{producto.nombreProducto}</td>
-                  <td>{producto.descripcionProducto || '-'}</td>
-                  <td>${producto.precioProducto?.toFixed(2)}</td>
-                  <td>{producto.stockProducto}</td>
-                  <td>{producto.categoriaProducto || '-'}</td>
+                <tr key={producto.codeProduct}>
+                  <td>{producto.codeProduct}</td>
+                  <td>{producto.nameProduct}</td>
+                  <td>{producto.descriptionProduct || '-'}</td>
+                  <td>${producto.priceProduct?.toFixed(2)}</td>
+                  <td>{producto.stockProduct}</td>
                   <td className="actions-cell">
                     <button className="btn-edit" onClick={() => onEditar(producto)}>
                       Editar
                     </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => onEliminar(producto.codigoProducto)}
-                    >
+                    <button className="btn-delete" onClick={() => onEliminar(producto.codeProduct)}>
                       Eliminar
                     </button>
                   </td>

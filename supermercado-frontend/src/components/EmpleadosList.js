@@ -11,31 +11,29 @@ function EmpleadosList({ empleados, onEliminar, onEditar }) {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Código</th>
+                <th>Cédula</th>
                 <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Cargo</th>
-                <th>Salario</th>
-                <th>Fecha Contratación</th>
+                <th>Email</th>
+                <th>Celular</th>
+                <th>Sueldo</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {empleados.map((empleado) => (
-                <tr key={empleado.codigoEmpleado}>
-                  <td>{empleado.codigoEmpleado}</td>
+                <tr key={empleado.cedulaEmpleado}>
+                  <td>{empleado.cedulaEmpleado}</td>
                   <td>{empleado.nombreEmpleado}</td>
-                  <td>{empleado.apellidoEmpleado}</td>
-                  <td>{empleado.cargoEmpleado}</td>
-                  <td>${empleado.salarioEmpleado?.toFixed(2)}</td>
-                  <td>{empleado.fechaContratacion || '-'}</td>
+                  <td>{empleado.emailEmpleado || '-'}</td>
+                  <td>{empleado.celularEmpleado}</td>
+                  <td>${empleado.sueldoEmpleado?.toFixed(2)}</td>
                   <td className="actions-cell">
                     <button className="btn-edit" onClick={() => onEditar(empleado)}>
                       Editar
                     </button>
                     <button
                       className="btn-delete"
-                      onClick={() => onEliminar(empleado.codigoEmpleado)}
+                      onClick={() => onEliminar(empleado.cedulaEmpleado)}
                     >
                       Eliminar
                     </button>

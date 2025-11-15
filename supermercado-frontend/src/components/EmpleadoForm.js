@@ -2,23 +2,21 @@ import React, { useState, useEffect } from 'react';
 
 function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
   const [formData, setFormData] = useState({
-    codigoEmpleado: '',
+    cedulaEmpleado: '',
     nombreEmpleado: '',
-    apellidoEmpleado: '',
-    cargoEmpleado: '',
-    salarioEmpleado: '',
-    fechaContratacion: '',
+    emailEmpleado: '',
+    celularEmpleado: '',
+    sueldoEmpleado: '',
   });
 
   useEffect(() => {
     if (empleadoEditar) {
       setFormData({
-        codigoEmpleado: empleadoEditar.codigoEmpleado || '',
+        cedulaEmpleado: empleadoEditar.cedulaEmpleado || '',
         nombreEmpleado: empleadoEditar.nombreEmpleado || '',
-        apellidoEmpleado: empleadoEditar.apellidoEmpleado || '',
-        cargoEmpleado: empleadoEditar.cargoEmpleado || '',
-        salarioEmpleado: empleadoEditar.salarioEmpleado || '',
-        fechaContratacion: empleadoEditar.fechaContratacion || '',
+        emailEmpleado: empleadoEditar.emailEmpleado || '',
+        celularEmpleado: empleadoEditar.celularEmpleado || '',
+        sueldoEmpleado: empleadoEditar.sueldoEmpleado || '',
       });
     }
   }, [empleadoEditar]);
@@ -35,29 +33,30 @@ function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
     e.preventDefault();
 
     if (
-      !formData.codigoEmpleado ||
+      !formData.cedulaEmpleado ||
       !formData.nombreEmpleado ||
-      !formData.apellidoEmpleado ||
-      !formData.cargoEmpleado ||
-      !formData.salarioEmpleado
+      !formData.celularEmpleado ||
+      !formData.sueldoEmpleado
     ) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
 
     const dataToSend = {
-      ...formData,
-      salarioEmpleado: parseFloat(formData.salarioEmpleado),
+      cedulaEmpleado: formData.cedulaEmpleado,
+      nombreEmpleado: formData.nombreEmpleado,
+      emailEmpleado: formData.emailEmpleado,
+      celularEmpleado: formData.celularEmpleado,
+      sueldoEmpleado: parseFloat(formData.sueldoEmpleado),
     };
 
     if (empleadoEditar) {
       // Actualizar - enviamos solo los campos con prefijo 'new'
       const datosActualizados = {
         newNombreEmpleado: dataToSend.nombreEmpleado,
-        newApellidoEmpleado: dataToSend.apellidoEmpleado,
-        newCargoEmpleado: dataToSend.cargoEmpleado,
-        newSalarioEmpleado: dataToSend.salarioEmpleado,
-        newFechaContratacion: dataToSend.fechaContratacion,
+        newEmailEmpleado: dataToSend.emailEmpleado,
+        newCelularEmpleado: dataToSend.celularEmpleado,
+        newSueldoEmpleado: dataToSend.sueldoEmpleado,
       };
       onGuardar(datosActualizados);
     } else {
@@ -67,23 +66,21 @@ function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
 
     // Limpiar formulario
     setFormData({
-      codigoEmpleado: '',
+      cedulaEmpleado: '',
       nombreEmpleado: '',
-      apellidoEmpleado: '',
-      cargoEmpleado: '',
-      salarioEmpleado: '',
-      fechaContratacion: '',
+      emailEmpleado: '',
+      celularEmpleado: '',
+      sueldoEmpleado: '',
     });
   };
 
   const handleCancelar = () => {
     setFormData({
-      codigoEmpleado: '',
+      cedulaEmpleado: '',
       nombreEmpleado: '',
-      apellidoEmpleado: '',
-      cargoEmpleado: '',
-      salarioEmpleado: '',
-      fechaContratacion: '',
+      emailEmpleado: '',
+      celularEmpleado: '',
+      sueldoEmpleado: '',
     });
     onCancelar();
   };
@@ -94,17 +91,18 @@ function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
       <form onSubmit={handleSubmit} className="data-form">
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="codigoEmpleado">
-              Código Empleado <span className="required">*</span>
+            <label htmlFor="cedulaEmpleado">
+              Cédula <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="codigoEmpleado"
-              name="codigoEmpleado"
-              value={formData.codigoEmpleado}
+              id="cedulaEmpleado"
+              name="cedulaEmpleado"
+              value={formData.cedulaEmpleado}
               onChange={handleChange}
               disabled={empleadoEditar ? true : false}
-              placeholder="Ej: EMP001"
+              placeholder="Ej: 1234567890"
+              maxLength="10"
               required
             />
           </div>
@@ -119,22 +117,7 @@ function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
               name="nombreEmpleado"
               value={formData.nombreEmpleado}
               onChange={handleChange}
-              placeholder="Ej: María"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="apellidoEmpleado">
-              Apellido <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="apellidoEmpleado"
-              name="apellidoEmpleado"
-              value={formData.apellidoEmpleado}
-              onChange={handleChange}
-              placeholder="Ej: González"
+              placeholder="Ej: María Pérez"
               required
             />
           </div>
@@ -142,45 +125,46 @@ function EmpleadoForm({ onGuardar, empleadoEditar, onCancelar }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="cargoEmpleado">
-              Cargo <span className="required">*</span>
+            <label htmlFor="emailEmpleado">Email</label>
+            <input
+              type="email"
+              id="emailEmpleado"
+              name="emailEmpleado"
+              value={formData.emailEmpleado}
+              onChange={handleChange}
+              placeholder="Ej: maria@correo.com"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="celularEmpleado">
+              Celular <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="cargoEmpleado"
-              name="cargoEmpleado"
-              value={formData.cargoEmpleado}
+              id="celularEmpleado"
+              name="celularEmpleado"
+              value={formData.celularEmpleado}
               onChange={handleChange}
-              placeholder="Ej: Cajero"
+              placeholder="Ej: 0987654321"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="salarioEmpleado">
-              Salario <span className="required">*</span>
+            <label htmlFor="sueldoEmpleado">
+              Sueldo <span className="required">*</span>
             </label>
             <input
               type="number"
-              id="salarioEmpleado"
-              name="salarioEmpleado"
-              value={formData.salarioEmpleado}
+              id="sueldoEmpleado"
+              name="sueldoEmpleado"
+              value={formData.sueldoEmpleado}
               onChange={handleChange}
               placeholder="Ej: 1500.00"
               step="0.01"
               min="0"
               required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="fechaContratacion">Fecha de Contratación</label>
-            <input
-              type="date"
-              id="fechaContratacion"
-              name="fechaContratacion"
-              value={formData.fechaContratacion}
-              onChange={handleChange}
             />
           </div>
         </div>

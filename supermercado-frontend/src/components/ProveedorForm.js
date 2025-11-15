@@ -36,7 +36,12 @@ function ProveedorForm({ onGuardar, proveedorEditar, onCancelar }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.nombreFiscal || !formData.rucNitNif || !formData.direccionFisica) {
+    // Validar campos obligatorios (trim para detectar espacios en blanco)
+    if (
+      !formData.nombreFiscal.trim() ||
+      !formData.rucNitNif.trim() ||
+      !formData.direccionFisica.trim()
+    ) {
       alert('Por favor, completa todos los campos obligatorios');
       return;
     }
@@ -44,18 +49,27 @@ function ProveedorForm({ onGuardar, proveedorEditar, onCancelar }) {
     if (proveedorEditar) {
       // Actualizar - enviamos solo los campos con prefijo 'new'
       const datosActualizados = {
-        newNombreFiscal: formData.nombreFiscal,
-        newRucNitNif: formData.rucNitNif,
-        newDireccionFisica: formData.direccionFisica,
-        newTelefonoPrincipal: formData.telefonoPrincipal,
-        newCorreoElectronico: formData.correoElectronico,
-        newContactoNombre: formData.contactoNombre,
-        newContactoPuesto: formData.contactoPuesto,
+        newNombreFiscal: formData.nombreFiscal.trim(),
+        newRucNitNif: formData.rucNitNif.trim(),
+        newDireccionFisica: formData.direccionFisica.trim(),
+        newTelefonoPrincipal: formData.telefonoPrincipal.trim(),
+        newCorreoElectronico: formData.correoElectronico.trim(),
+        newContactoNombre: formData.contactoNombre.trim(),
+        newContactoPuesto: formData.contactoPuesto.trim(),
       };
       onGuardar(datosActualizados);
     } else {
-      // Crear nuevo
-      onGuardar(formData);
+      // Crear nuevo - asegurarnos de que todos los campos son strings
+      const dataToSend = {
+        nombreFiscal: formData.nombreFiscal.trim(),
+        rucNitNif: formData.rucNitNif.trim(),
+        direccionFisica: formData.direccionFisica.trim(),
+        telefonoPrincipal: formData.telefonoPrincipal.trim(),
+        correoElectronico: formData.correoElectronico.trim(),
+        contactoNombre: formData.contactoNombre.trim(),
+        contactoPuesto: formData.contactoPuesto.trim(),
+      };
+      onGuardar(dataToSend);
     }
 
     // Limpiar formulario
