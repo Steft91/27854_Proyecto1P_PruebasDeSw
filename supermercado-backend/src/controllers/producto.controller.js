@@ -34,15 +34,24 @@ function createNewProduct(req, res) {
         stockProduct 
     } = req.body;
 
-    // VALIDACIONES DE TIPOS DE DATOS
+    // 1. VALIDAR CAMPOS OBLIGATORIOS
+    if (!codeProduct || !nameProduct || priceProduct == undefined || stockProduct == undefined) {
+        return res.status(400).json({ message: 'Faltan datos obligatorios del producto' });
+    }
+
+    // 2. VALIDACIONES DE STRINGS VACÍOS
+    if (
+        typeof codeProduct === 'string' && !codeProduct.trim() ||
+        typeof nameProduct === 'string' && !nameProduct.trim() ||
+        typeof descriptionProduct === 'string' && !descriptionProduct.trim()
+    ) {
+        return res.status(400).json({ message: 'Los campos no pueden estar vacíos' });
+    }
+
+
+    // 3. VALIDACIONES DE TIPOS DE DATOS
     if (typeof codeProduct !== 'string') {
         return res.status(400).json({ message: 'El código del producto debe ser texto' });
-    }
-    // Validar formato LETRAS + NÚMEROS (ej: PROD001)
-    if (!/^[A-Za-z]{3,10}[0-9]{1,10}$/.test(codeProduct.trim())) {
-    return res.status(400).json({
-        message: 'El código del producto debe tener el formato LETRAS + NUMEROS (ej: PROD001)',
-    });
     }
     if (typeof nameProduct !== 'string') {
         return res.status(400).json({ message: 'El nombre del producto debe ser texto' });
@@ -50,34 +59,40 @@ function createNewProduct(req, res) {
     if (typeof descriptionProduct !== 'string') {
         return res.status(400).json({ message: 'La descripción del producto debe ser texto' });
     }
-    if (typeof priceProduct !== 'number' || isNaN(priceProduct) || priceProduct <= 0) {
-        return res.status(400).json({ message: 'El precio del producto debe ser un número válido mayor a 0' });
+    if (typeof priceProduct !== 'number') {
+        return res.status(400).json({ message: 'El precio del producto debe ser numérico' });
     }
-    if (! Number.isInteger(stockProduct) || typeof stockProduct !== 'number' || isNaN(stockProduct) || stockProduct < 0) {
-        return res.status(400).json({ message: 'El stock del producto debe ser un número entero mayor o igual a 0' });
-    }
-
-    // VALIDACIONES DE STRINGS VACÍOS
-    if (!codeProduct.trim()) {
-        return res.status(400).json({ message: 'El código del producto no puede estar vacío' });
-    }
-    if (!nameProduct.trim()) {
-        return res.status(400).json({ message: 'El nombre del producto no puede estar vacío' });
+    if (typeof  stockProduct !== 'number' || !Number.isInteger(stockProduct)) {
+        return res.status(400).json({ message: 'El stock del producto debe ser numérico' });
     }
 
-    // VALIDACIONES DE LONGITUD MÁXIMA
+    // 4. VALIDAR FORMATO DEL CÓDIGO (LETRAS + NÚMEROS)
+    if (!/^[A-Za-z]{3,10}[0-9]{1,10}$/.test(codeProduct.trim())) {
+        return res.status(400).json({
+            message: 'Formato de código inválido (use LETRAS + NUMEROS, ej: PROD001)'
+        });
+    }
+
+    // 5. VALIDACIÓN DE PRECIO NO NEGATIVO
+    if (priceProduct <= 0) {
+        return res.status(400).json({ message: 'Precio no puede ser negativo' });
+    }
+    // 6. VALIDACIÓN DE STOCK NO NEGATIVO
+    if (stockProduct < 0) {
+        return res.status(400).json({ message: 'Stock no puede ser negativo' });
+    }
+
+
+    // 7. VALIDACIONES DE LONGITUD MÁXIMA
     if (nameProduct.length > 100) {
         return res.status(400).json({ message: 'El nombre del producto no puede exceder los 100 caracteres' });
     }
-    if (descriptionProduct && descriptionProduct.trim().length > 300) {
+    if (descriptionProduct.trim().length > 300) {
         return res.status(400).json({ message: 'La descripción del producto no puede exceder los 300 caracteres' });
     }
 
-    // VALIDAR SI EL PRODUCTO YA EXISTE
-    const existingProduct = products.find(
-        (producto) => producto.codeProduct === codeProduct.trim()
-    );
-    if (existingProduct) {
+    // 8. VALIDAR SI EL PRODUCTO YA EXISTE
+    if (products.some(p => p.codeProduct === codeProduct.trim())) {
         return res.status(409).json({ message: 'Ya existe un producto con ese código' });
     }
 
@@ -85,9 +100,7 @@ function createNewProduct(req, res) {
     const newProduct = {
         codeProduct: codeProduct.trim(),
         nameProduct: nameProduct.trim(),
-        descriptionProduct: descriptionProduct && typeof descriptionProduct === 'string' 
-            ? descriptionProduct.trim()
-            : '',
+        descriptionProduct: descriptionProduct.trim(),
         priceProduct,
         stockProduct
 };
@@ -123,76 +136,55 @@ function updateExistingProduct(req, res) {
 
     // VALIDACIONES
 
-    if (newCodeProduct !== undefined) {
-        if (typeof newCodeProduct !== 'string' || !/^[A-Za-z]{3,10}[0-9]{1,10}$/.test(newCodeProduct.trim())) {
-            return res.status(400).json({
-            message: 'Formato de código inválido (use LETRAS + NUMEROS, ej: PROD001)',
-            });
+    // Validar strings vacíos solo si NO es número u otro tipo
+    if (newNameProduct !== undefined) {
+        if (typeof newNameProduct !== 'string') {
+            return res.status(400).json({ message: 'El nombre del producto debe ser texto' });
         }
+        if (!newNameProduct.trim()) {
+            return res.status(400).json({ message: 'Los campos no pueden estar vacíos' });
         }
-
-
-    if (newNameProduct !== undefined && typeof newNameProduct !== 'string' ){
-        return res.status(400).json({ message: 'El nombre del producto debe ser texto' });
-    }
-    
-    if (newDescriptionProduct !== undefined && typeof newDescriptionProduct !== 'string' ) {
-        return res.status(400).json({ message: 'La descripción del producto debe ser texto' });
+        if (newNameProduct.length > 100) {
+            return res.status(400).json({ message: 'El nombre del producto no puede exceder los 100 caracteres' });
+        }
     }
 
-    if (newPriceProduct !== undefined && 
-        (typeof newPriceProduct !== 'number' || isNaN(newPriceProduct) || newPriceProduct <= 0) 
-    ){
-        return res.status(400).json({ message: 'El precio del producto debe ser un número válido mayor a 0' });
+    if (newDescriptionProduct !== undefined) {
+        if (typeof newDescriptionProduct !== 'string') {
+            return res.status(400).json({ message: 'La descripción del producto debe ser texto' });
+        }
+        if (!newDescriptionProduct.trim()) {
+            return res.status(400).json({ message: 'Los campos no pueden estar vacíos' });
+        }
+        if (newDescriptionProduct.length > 300) {
+            return res.status(400).json({ message: 'La descripción del producto no puede exceder los 300 caracteres' });
+        }
     }
 
-    if (newStockProduct !== undefined && 
-        (! Number.isInteger(newStockProduct) || typeof newStockProduct !== 'number' || isNaN(newStockProduct) || newStockProduct < 0) 
-    ){
-        return res.status(400).json({ message: 'El stock del producto debe ser un número entero mayor o igual a 0' });
+        // Validación de precio si se proporciona
+    if (newPriceProduct !== undefined) {
+        if (typeof newPriceProduct !== 'number') {
+            return res.status(400).json({ message: 'El precio del producto debe ser numérico' });
+        }
+    }
+    if (newStockProduct !== undefined){
+        if (typeof newStockProduct !== 'number' || !Number.isInteger(newStockProduct)) {
+            return res.status(400).json({ message: 'El stock del producto debe ser numérico' });
+        }
     }
 
-    //Validar strings vacíos
-    if (newNameProduct !== undefined && !newNameProduct.trim()) {
-        return res.status(400).json({ message: 'El nombre del producto no puede estar vacío' });
-    }
-    if (newDescriptionProduct !== undefined && !newDescriptionProduct.trim()) {
-        return res.status(400).json({ message: 'La descripción del producto no puede estar vacía' });
-    }
-
-    //Validar longitudes máximas
-    if (newNameProduct !== undefined && newNameProduct.length > 100) {
-        return res.status(400).json({ message: 'El nombre del producto no puede exceder los 100 caracteres' });
-    }
-    if (newDescriptionProduct !== undefined && newDescriptionProduct.length > 300) {
-        return res.status(400).json({ message: 'La descripción del producto no puede exceder los 300 caracteres' });
-    }
 
     // ACTUALIZACIÓN
 
     const oldProduct = products[productIndex];
     const updatedProduct = {
         ...oldProduct,
-        nameProduct: 
-        newNameProduct !== undefined 
-        ? newNameProduct.trim() 
-        : oldProduct.nameProduct,
-
-        descriptionProduct: 
-        newDescriptionProduct !== undefined 
-        ? newDescriptionProduct.trim() 
-        : oldProduct.descriptionProduct,
-
-        priceProduct: 
-        newPriceProduct !== undefined 
-        ? newPriceProduct 
-        : oldProduct.priceProduct,
-
-        stockProduct: 
-        newStockProduct !== undefined 
-        ? newStockProduct 
-        : oldProduct.stockProduct
+        nameProduct: newNameProduct ?? oldProduct.nameProduct,
+        descriptionProduct: newDescriptionProduct ?? oldProduct.descriptionProduct,
+        priceProduct: newPriceProduct ?? oldProduct.priceProduct,
+        stockProduct: newStockProduct ?? oldProduct.stockProduct
     };
+
     products[productIndex] = updatedProduct;
 
     //Devolver 200 OK y el objeto actualizado
@@ -223,7 +215,15 @@ function deleteProduct(req, res) {
     products.splice(productIndex, 1);
     
     //Devolver 200 OK
-    res.status(200).json({message: 'Producto eliminado con exito'});
+    res.status(200).json({
+        message: 'Producto eliminado con exito'
+    });
 }
 
-module.exports = { getListProduct, getProductByCode, createNewProduct, updateExistingProduct, deleteProduct };
+module.exports = { 
+    getListProduct, 
+    getProductByCode, 
+    createNewProduct, 
+    updateExistingProduct, 
+    deleteProduct 
+};
