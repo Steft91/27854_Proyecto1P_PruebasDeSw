@@ -1,4 +1,5 @@
 let providers = [];
+let nextProviderId = 1; // Contador para ID autoincremental
 
 /**
  * @route GET /providers
@@ -10,11 +11,12 @@ function getListProvider(req, res) {
 
 /**
  * @route GET /providers/:id
- * @description Obtiene un solo proveedor por su ID
+ * @description Obtiene un proveedor específico por ID
  */
 function getProviderById(req, res) {
   const { id } = req.params;
-  const provider = providers.find((p) => p.idProveedor === id);
+  // Convertir ID de string a número para comparar con IDs autoincrementales
+  const provider = providers.find((p) => p.idProveedor === Number(id));
 
   if (!provider) {
     return res.status(404).json({ message: 'Proveedor no encontrado' });
@@ -29,7 +31,6 @@ function getProviderById(req, res) {
  */
 function createNewProvider(req, res) {
   const {
-    idProveedor,
     nombreFiscal,
     rucNitNif,
     direccionFisica,
@@ -41,7 +42,6 @@ function createNewProvider(req, res) {
 
   // Validación de tipos de datos
   if (
-    typeof idProveedor !== 'string' ||
     typeof nombreFiscal !== 'string' ||
     typeof rucNitNif !== 'string' ||
     typeof direccionFisica !== 'string'
@@ -52,10 +52,10 @@ function createNewProvider(req, res) {
   }
 
   // Validación de campos obligatorios y strings vacíos
-  if (!idProveedor.trim() || !nombreFiscal.trim() || !rucNitNif.trim() || !direccionFisica.trim()) {
+  if (!nombreFiscal.trim() || !rucNitNif.trim() || !direccionFisica.trim()) {
     return res.status(400).json({
       message:
-        'Campos obligatorios faltantes o vacíos (ID, nombre fiscal, RUC/NIT/NIF o dirección física)',
+        'Campos obligatorios faltantes o vacíos (nombre fiscal, RUC/NIT/NIF o dirección física)',
     });
   }
 
@@ -97,23 +97,15 @@ function createNewProvider(req, res) {
     });
   }
 
-  // Comprobar si el proveedor ya existe
-  const existingProvider = providers.find(
-    (provider) => provider.idProveedor === idProveedor.trim()
-  );
-  if (existingProvider) {
-    return res.status(409).json({ message: 'Ya existe un proveedor con ese ID' });
-  }
-
   // Comprobar si el RUC/NIT/NIF ya existe
   const existingRuc = providers.find((provider) => provider.rucNitNif === rucNitNif.trim());
   if (existingRuc) {
     return res.status(409).json({ message: 'Ya existe un proveedor con ese RUC/NIT/NIF' });
   }
 
-  // Creación del objeto con datos sanitizados
+  // Creación del objeto con datos sanitizados y ID autoincremental
   const newProvider = {
-    idProveedor: idProveedor.trim(),
+    idProveedor: nextProviderId++, // Asignar ID autoincremental
     nombreFiscal: nombreFiscal.trim(),
     rucNitNif: rucNitNif.trim(),
     direccionFisica: direccionFisica.trim(),
@@ -149,8 +141,8 @@ function updateExistingProvider(req, res) {
     newContactoPuesto,
   } = req.body;
 
-  // Usar findIndex para encontrar al proveedor
-  const providerIndex = providers.findIndex((provider) => provider.idProveedor === id);
+  // Usar findIndex para encontrar al proveedor (convertir ID de string a número)
+  const providerIndex = providers.findIndex((provider) => provider.idProveedor === Number(id));
 
   // Manejar el error 404
   if (providerIndex === -1) {
@@ -281,8 +273,8 @@ function updateExistingProvider(req, res) {
 function deleteProvider(req, res) {
   const { id } = req.params;
 
-  // Comprobar si el proveedor existe
-  const providerIndex = providers.findIndex((provider) => provider.idProveedor === id);
+  // Comprobar si el proveedor existe (convertir ID de string a número)
+  const providerIndex = providers.findIndex((provider) => provider.idProveedor === Number(id));
 
   // Manejar el error 404
   if (providerIndex === -1) {

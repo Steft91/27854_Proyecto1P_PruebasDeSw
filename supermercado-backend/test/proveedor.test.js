@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../src/app');
 
 const mockProvider = {
-  idProveedor: 'PROV001',
   nombreFiscal: 'Productos Lácteos del Sur S.A.',
   rucNitNif: '1234567890001',
   direccionFisica: 'Av. Principal 123',
@@ -13,7 +12,6 @@ const mockProvider = {
 };
 
 const mockProvider2 = {
-  idProveedor: 'PROV002',
   nombreFiscal: 'Distribuidora Nacional de Alimentos',
   rucNitNif: '9876543210001',
   direccionFisica: 'Calle Secundaria 456',
@@ -29,9 +27,10 @@ describe('Provider API', () => {
     });
 
     test('should find a provider if provider exists', async () => {
-      await request(app).post('/api/providers').send(mockProvider);
+      const createResponse = await request(app).post('/api/providers').send(mockProvider);
+      const createdId = createResponse.body.provider.idProveedor;
 
-      const response = await request(app).get(`/api/providers/${mockProvider.idProveedor}`);
+      const response = await request(app).get(`/api/providers/${createdId}`);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.nombreFiscal).toBe(mockProvider.nombreFiscal);
@@ -74,16 +73,8 @@ describe('Provider API', () => {
       // Crear el primer proveedor
       await request(app).post('/api/providers').send(mockProvider);
 
-      // Intentar crear un proveedor con el mismo ID
-      const response = await request(app)
-        .post('/api/providers')
-        .send({
-          ...mockProvider2,
-          idProveedor: 'PROV001',
-        });
-
-      expect(response.statusCode).toBe(409);
-      expect(response.body.message).toBe('Ya existe un proveedor con ese ID');
+      // Este test ya no aplica porque el ID es autoincremental
+      // Los IDs nunca se duplicarán porque son generados por el servidor
     });
 
     // Prueba POST intentar crear un proveedor con el mismo RUC/NIT/NIF
@@ -91,9 +82,8 @@ describe('Provider API', () => {
       // Crear el primer proveedor
       await request(app).post('/api/providers').send(mockProvider);
 
-      // Intentar crear un proveedor con ID diferente pero mismo RUC/NIT/NIF
+      // Intentar crear un proveedor con el mismo RUC/NIT/NIF
       const response = await request(app).post('/api/providers').send({
-        idProveedor: 'PROV999', // ID diferente
         nombreFiscal: 'Otra Empresa S.A.',
         rucNitNif: '1234567890001', // Mismo RUC que mockProvider
         direccionFisica: 'Otra Dirección 123',
@@ -106,7 +96,6 @@ describe('Provider API', () => {
     // Prueba POST con campos vacíos (strings vacíos)
     test('should fail when fields are empty strings', async () => {
       const providerConCamposVacios = {
-        idProveedor: '   ',
         nombreFiscal: '',
         rucNitNif: '1234567890123',
         direccionFisica: 'Dirección Test',
@@ -116,14 +105,13 @@ describe('Provider API', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toBe(
-        'Campos obligatorios faltantes o vacíos (ID, nombre fiscal, RUC/NIT/NIF o dirección física)'
+        'Campos obligatorios faltantes o vacíos (nombre fiscal, RUC/NIT/NIF o dirección física)'
       );
     });
 
     // Prueba POST con RUC inválido (muy corto)
     test('should fail with invalid RUC format (too short)', async () => {
       const providerRucInvalido = {
-        idProveedor: 'PROV003',
         nombreFiscal: 'Test Company',
         rucNitNif: '12345', // Menos de 10 dígitos
         direccionFisica: 'Test Address',
@@ -140,7 +128,6 @@ describe('Provider API', () => {
     // Prueba POST con RUC inválido (contiene letras)
     test('should fail with invalid RUC format (contains letters)', async () => {
       const providerRucInvalido = {
-        idProveedor: 'PROV004',
         nombreFiscal: 'Test Company',
         rucNitNif: '12345ABC90123', // Contiene letras
         direccionFisica: 'Test Address',
@@ -157,7 +144,6 @@ describe('Provider API', () => {
     // Prueba POST con email inválido
     test('should fail with invalid email format', async () => {
       const providerEmailInvalido = {
-        idProveedor: 'PROV005',
         nombreFiscal: 'Test Company',
         rucNitNif: '1234567890123',
         direccionFisica: 'Test Address',
@@ -173,7 +159,6 @@ describe('Provider API', () => {
     // Prueba POST con teléfono inválido
     test('should fail with invalid phone format', async () => {
       const providerTelefonoInvalido = {
-        idProveedor: 'PROV006',
         nombreFiscal: 'Test Company',
         rucNitNif: '1234567890123',
         direccionFisica: 'Test Address',
@@ -191,8 +176,7 @@ describe('Provider API', () => {
     // Prueba POST con tipos de datos incorrectos
     test('should fail with incorrect data types', async () => {
       const providerTiposIncorrectos = {
-        idProveedor: 12345, // Número en lugar de string
-        nombreFiscal: 'Test Company',
+        nombreFiscal: 12345, // Número en lugar de string
         rucNitNif: '1234567890123',
         direccionFisica: 'Test Address',
       };
@@ -208,7 +192,6 @@ describe('Provider API', () => {
     // Prueba PUT para actualizar un proveedor correctamente
     test('should update a specific provider info', async () => {
       const proveedorNuevo = {
-        idProveedor: 'PROV003',
         nombreFiscal: 'Empresa de Prueba S.A.',
         rucNitNif: '5555555555001',
         direccionFisica: 'Calle Test 789',
@@ -246,8 +229,15 @@ describe('Provider API', () => {
     });
 
     test('should update only new data and preserve the old ones', async () => {
-      // Crear el proveedor original
-      await request(app).post('/api/providers').send(mockProvider);
+      // Crear un proveedor inicial
+      const proveedorParaPrueba = {
+        nombreFiscal: 'Proveedor Para Actualización',
+        rucNitNif: '9999999999999',
+        direccionFisica: 'Dirección Original 123',
+      };
+
+      const createResponse = await request(app).post('/api/providers').send(proveedorParaPrueba);
+      const createdId = createResponse.body.provider.idProveedor;
 
       const datosActualizadosParciales = {
         newDireccionFisica: 'Nueva Dirección 999',
@@ -256,33 +246,38 @@ describe('Provider API', () => {
       };
 
       const response = await request(app)
-        .put(`/api/providers/${mockProvider.idProveedor}`)
+        .put(`/api/providers/${createdId}`)
         .send(datosActualizadosParciales);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.provider.direccionFisica).toBe('Nueva Dirección 999');
       expect(response.body.provider.correoElectronico).toBe('nuevo@email.com');
 
-      expect(response.body.provider.nombreFiscal).toBe(mockProvider.nombreFiscal);
+      expect(response.body.provider.nombreFiscal).toBe(proveedorParaPrueba.nombreFiscal);
     });
   });
 
   describe('DELETE /api/providers/:id', () => {
     test('should delete a specific provider successfully', async () => {
-      // Crear el proveedor
-      await request(app).post('/api/providers').send(mockProvider);
+      // Crear un proveedor para eliminación
+      const proveedorParaBorrar = {
+        nombreFiscal: 'Proveedor Para Borrar',
+        rucNitNif: '8888888888888',
+        direccionFisica: 'Dirección Temporal 456',
+      };
+
+      const createResponse = await request(app).post('/api/providers').send(proveedorParaBorrar);
+      const createdId = createResponse.body.provider.idProveedor;
 
       // Borrar el proveedor
-      const deleteResponse = await request(app).delete(
-        `/api/providers/${mockProvider.idProveedor}`
-      );
+      const deleteResponse = await request(app).delete(`/api/providers/${createdId}`);
 
       // Comprobar la respuesta de borrado
       expect(deleteResponse.statusCode).toBe(200);
       expect(deleteResponse.body.message).toBe('Proveedor eliminado con exito');
 
       // Verificar que fue borrado
-      const getResponse = await request(app).get(`/api/providers/${mockProvider.idProveedor}`);
+      const getResponse = await request(app).get(`/api/providers/${createdId}`);
       expect(getResponse.statusCode).toBe(404);
     });
 
