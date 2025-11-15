@@ -12,7 +12,7 @@ const mockProduct = {
 const mockProduct2 = {
     codeProduct: 'PROD002',
     nameProduct: 'Pan',
-    descriptionProduct: 'Pan integral',
+    descriptionProduct: 'Pan integral de 2 kg',
     priceProduct: 1.50,
     stockProduct: 50
 };
@@ -113,7 +113,7 @@ describe('POST /api/products', () => {
         await request(app).post('/api/products').send(mockProduct);
 
         // Intentar crear un producto con el mismo código
-        const response = await request(app).post('/api/products').send(mockProduct2);
+        const response = await request(app).post('/api/products').send(mockProduct);
 
         expect(response.statusCode).toBe(409);
         expect(response.body.message).toBe('Ya existe un producto con ese código');
@@ -186,7 +186,7 @@ describe('POST /api/products', () => {
         };
         const response = await request(app).post('/api/products').send(emptyStringsProduct);
         expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe('Los campos no pueden estar vacíos');
+        expect(response.body.message).toBe('Faltan datos obligatorios del producto');
     });
 });
 
@@ -194,7 +194,13 @@ describe('PUT /api/products/:codeProduct', () => {
     //Prueba PUT actualizar producto correctamente
     test('should update a product successfully', async () => {
         await request(app).post('/api/products').send(mockProduct); 
-        const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(mockProduct2);
+        const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`)
+        .send({
+            newNameProduct: mockProduct2.nameProduct,
+            newDescriptionProduct: mockProduct2.descriptionProduct,
+            newPriceProduct: mockProduct2.priceProduct,
+            newStockProduct: mockProduct2.stockProduct
+        })        
         expect(response.statusCode).toBe(200);
         expect(response.body.product).toBeDefined();
         expect(response.body.product).toHaveProperty('codeProduct');
@@ -212,10 +218,10 @@ describe('PUT /api/products/:codeProduct', () => {
     test('should fail cause strings are empty', async () => {
         const emptyStringsProduct = {    
             codeProduct: 'PROD010',
-            nameProduct: '',
-            descriptionProduct: '',
-            priceProduct: 0,
-            stockProduct: 0,
+            newNameProduct: '',
+            newDescriptionProduct: '',
+            newPriceProduct: 0,
+            newStockProduct: 0,
         };
         const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(emptyStringsProduct);
         expect(response.statusCode).toBe(400);
@@ -226,10 +232,10 @@ describe('PUT /api/products/:codeProduct', () => {
     test('should fail cause name is not text', async () => {
         const nonTextNameProduct = {    
             codeProduct: 'PROD007',
-            nameProduct: 123, // No es texto
-            descriptionProduct: 'Descripción',
-            priceProduct: 10.99,
-            stockProduct: 50,
+            newNameProduct: 123, // No es texto
+            newDescriptionProduct: 'Descripción',
+            newPriceProduct: 10.99,
+            newStockProduct: 50,
         };
         const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(nonTextNameProduct);
         expect(response.statusCode).toBe(400);
@@ -240,10 +246,10 @@ describe('PUT /api/products/:codeProduct', () => {
     test('should fail cause description is not text', async () => {
         const nonTextDescriptionProduct = {    
             codeProduct: 'PROD007',
-            nameProduct: 'Producto con descripción no texto',
-            descriptionProduct: 123, // No es texto
-            priceProduct: 10.99,
-            stockProduct: 50,
+            newNameProduct: 'Producto con descripción no texto',
+            newDescriptionProduct: 123, // No es texto
+            newPriceProduct: 10.99,
+            newStockProduct: 50,
         };
         const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(nonTextDescriptionProduct);
         expect(response.statusCode).toBe(400);
@@ -254,10 +260,10 @@ describe('PUT /api/products/:codeProduct', () => {
     test('should fail cause price is not numeric', async () => {
         const nonNumericPriceProduct = {    
             codeProduct: 'PROD007',
-            nameProduct: 'Producto con precio no numérico',
-            descriptionProduct: 'Descripción',
-            priceProduct: '10.99', // No es numérico
-            stockProduct: 50,
+            newNameProduct: 'Producto con precio no numérico',
+            newDescriptionProduct: 'Descripción',
+            newPriceProduct: '10.99', // No es numérico
+            newStockProduct: 50,
         };        
         const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(nonNumericPriceProduct);
         expect(response.statusCode).toBe(400);
@@ -268,10 +274,10 @@ describe('PUT /api/products/:codeProduct', () => {
     test('should fail cause stock is not numeric', async () => {
         const nonNumericStockProduct = {    
             codeProduct: 'PROD007',
-            nameProduct: 'Producto con stock no numérico',
-            descriptionProduct: 'Descripción',
-            priceProduct: 10.99,        
-            stockProduct: '50', // No es numérico
+            newNameProduct: 'Producto con stock no numérico',
+            newDescriptionProduct: 'Descripción',
+            newPriceProduct: 10.99,        
+            newStockProduct: '50', // No es numérico
         };        
         const response = await request(app).put(`/api/products/${mockProduct.codeProduct}`).send(nonNumericStockProduct);
         expect(response.statusCode).toBe(400);
