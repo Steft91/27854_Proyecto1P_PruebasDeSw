@@ -5,7 +5,7 @@ const mockProduct = {
     codeProduct: 'PROD001',
     nameProduct: 'Leche',
     descriptionProduct: 'Leche descremada',
-    priceProduct: 2.50,
+    priceProduct: 2.5,
     stockProduct: 100
 };
 
@@ -13,7 +13,7 @@ const mockProduct2 = {
     codeProduct: 'PROD002',
     nameProduct: 'Pan',
     descriptionProduct: 'Pan integral de 2 kg',
-    priceProduct: 1.50,
+    priceProduct: 1.5,
     stockProduct: 50
 };
 
@@ -200,7 +200,7 @@ describe('PUT /api/products/:codeProduct', () => {
             newDescriptionProduct: mockProduct2.descriptionProduct,
             newPriceProduct: mockProduct2.priceProduct,
             newStockProduct: mockProduct2.stockProduct
-        })        
+        });        
         expect(response.statusCode).toBe(200);
         expect(response.body.product).toBeDefined();
         expect(response.body.product).toHaveProperty('codeProduct');

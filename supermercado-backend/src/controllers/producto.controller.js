@@ -1,4 +1,4 @@
-let products = [];
+const products = [];
 
 /**
  * @route GET /products
@@ -35,7 +35,7 @@ function createNewProduct(req, res) {
     } = req.body;
 
     // 1. VALIDAR CAMPOS OBLIGATORIOS
-    if (!codeProduct || !nameProduct || priceProduct == undefined || stockProduct == undefined) {
+    if (!codeProduct || !nameProduct || priceProduct === undefined || stockProduct === undefined) {
         return res.status(400).json({ message: 'Faltan datos obligatorios del producto' });
     }
 

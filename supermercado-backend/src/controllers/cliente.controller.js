@@ -1,4 +1,4 @@
-let clients = [];
+const clients = [];
 
 /**
  * @route GET /clients

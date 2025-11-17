@@ -1,4 +1,4 @@
-let empleados = [];
+const empleados = [];
 
 /**
  * @route GET /empleados

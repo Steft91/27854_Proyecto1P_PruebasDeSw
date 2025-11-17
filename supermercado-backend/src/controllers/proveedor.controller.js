@@ -1,4 +1,4 @@
-let providers = [];
+const providers = [];
 let nextProviderId = 1; // Contador para ID autoincremental
 
 /**
