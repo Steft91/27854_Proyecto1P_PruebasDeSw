@@ -20,12 +20,14 @@ const mockProvider2 = {
 
 describe('Provider API', () => {
   describe('GET /api/providers', () => {
+    // Prueba GET lista vacía
     test('should return an empty list initially', async () => {
       const response = await request(app).get('/api/providers');
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual([]);
     });
 
+    // Prueba GET encontrar un proveedor por ID
     test('should find a provider if provider exists', async () => {
       const createResponse = await request(app).post('/api/providers').send(mockProvider);
       const createdId = createResponse.body.provider.idProveedor;
@@ -36,6 +38,7 @@ describe('Provider API', () => {
       expect(response.body.nombreFiscal).toBe(mockProvider.nombreFiscal);
     });
 
+    // Prueba GET proveedor no encontrado (404)
     test('should throw 404 if provider ID does not exist', async () => {
       const response = await request(app).get('/api/providers/ID-FALSO-123');
 
@@ -66,15 +69,6 @@ describe('Provider API', () => {
       expect(response.statusCode).toBe(400);
       // Puede fallar por tipo de dato o por campo faltante
       expect(response.body.message).toMatch(/obligatorios|texto/);
-    });
-
-    // Prueba POST intentar crear un proveedor con el mismo ID
-    test('should fail cause ID already exists', async () => {
-      // Crear el primer proveedor
-      await request(app).post('/api/providers').send(mockProvider);
-
-      // Este test ya no aplica porque el ID es autoincremental
-      // Los IDs nunca se duplicarán porque son generados por el servidor
     });
 
     // Prueba POST intentar crear un proveedor con el mismo RUC/NIT/NIF
@@ -172,6 +166,32 @@ describe('Provider API', () => {
         'Formato de teléfono inválido (debe contener entre 7 y 20 caracteres numéricos)'
       );
     });
+
+    // Prueba POST con nombre de contacto muy largo
+    test('should fail if contactoNombre is too long', async () => {
+      const provider = {
+        nombreFiscal: 'Test Company',
+        rucNitNif: '1234567890123',
+        direccionFisica: 'Test Address',
+        contactoNombre: 'a'.repeat(101), // > 100 caracteres
+      };
+      const response = await request(app).post('/api/providers').send(provider);
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El nombre de contacto no puede exceder 100 caracteres');
+    });
+
+    // Prueba POST con puesto de contacto muy largo
+    test('should fail if contactoPuesto is too long', async () => {
+      const provider = {
+        nombreFiscal: 'Test Company',
+        rucNitNif: '1234567890124', // RUC diferente
+        direccionFisica: 'Test Address',
+        contactoPuesto: 'a'.repeat(101), // > 100 caracteres
+      };
+      const response = await request(app).post('/api/providers').send(provider);
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El puesto de contacto no puede exceder 100 caracteres');
+    });
   });
 
   describe('PUT /api/providers/:id', () => {
@@ -184,7 +204,6 @@ describe('Provider API', () => {
       };
 
       const postRes = await request(app).post('/api/providers').send(proveedorNuevo);
-
       const id = postRes.body.provider.idProveedor;
 
       const datosActualizados = {
@@ -203,7 +222,7 @@ describe('Provider API', () => {
 
     // Prueba PUT intento de actualizar un proveedor inexistente
     test('should throw 404 if provider does not exist', async () => {
-      const idInexistente = 'PROV-NO-EXISTE';
+      const idInexistente = '99999';
       const datosActualizados = {
         newNombreFiscal: 'Proveedor Fantasma',
       };
@@ -214,6 +233,7 @@ describe('Provider API', () => {
       expect(res.body.message).toBe('Proveedor no encontrado');
     });
 
+    // Prueba PUT actualizar solo datos nuevos y preservar antiguos
     test('should update only new data and preserve the old ones', async () => {
       // Crear un proveedor inicial
       const proveedorParaPrueba = {
@@ -238,12 +258,158 @@ describe('Provider API', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.provider.direccionFisica).toBe('Nueva Dirección 999');
       expect(response.body.provider.correoElectronico).toBe('nuevo@email.com');
-
       expect(response.body.provider.nombreFiscal).toBe(proveedorParaPrueba.nombreFiscal);
+    });
+
+    // Prueba PUT con nombre fiscal no-string
+    test('should fail if newNombreFiscal is not a string', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111001', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newNombreFiscal: 123 });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El nombre fiscal debe ser texto');
+    });
+
+    // Prueba PUT con RUC/NIT/NIF no-string
+    test('should fail if newRucNitNif is not a string', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111002', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newRucNitNif: 123 });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El RUC/NIT/NIF debe ser texto');
+    });
+
+    // Prueba PUT con dirección fisica no-string
+    test('should fail if newDireccionFisica is not a string', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111003', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newDireccionFisica: 123 });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('La dirección física debe ser texto');
+    });
+
+    // Prueba PUT con nombre fiscal con espacios
+    test('should fail if newNombreFiscal is empty spaces', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111004', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newNombreFiscal: '   ' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El nombre fiscal no puede estar vacío');
+    });
+
+    // Prueba PUT con dirección fisica con espacios
+    test('should fail if newDireccionFisica is empty spaces', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111005', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newDireccionFisica: '   ' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('La dirección física no puede estar vacía');
+    });
+
+    // Prueba PUT con RUC/NIT/NIF con espacios
+    test('should fail if newRucNitNif is empty spaces', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111006', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newRucNitNif: '   ' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El RUC/NIT/NIF no puede estar vacío');
+    });
+
+    // Prueba PUT con RUC/NIT/NIF invalido
+    test('should fail if newRucNitNif has invalid format', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111007', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newRucNitNif: '123' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('Formato de RUC/NIT/NIF inválido (debe contener entre 10 y 15 dígitos)');
+    });
+
+    // Prueba PUT con email invalido
+    test('should fail if newCorreoElectronico has invalid format', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111008', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newCorreoElectronico: 'bad-email' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('Formato de correo electrónico inválido');
+    });
+
+    // Prueba PUT con telefono invalido
+    test('should fail if newTelefonoPrincipal has invalid format', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111009', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newTelefonoPrincipal: '123' });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('Formato de teléfono inválido (debe contener entre 7 y 20 caracteres numéricos)');
+    });
+    
+    // Prueba PUT con nombre de contacto muy largo
+    test('should fail if newContactoNombre is too long', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111010', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newContactoNombre: 'a'.repeat(101) });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El nombre de contacto no puede exceder 100 caracteres');
+    });
+
+    // Prueba PUT con puesto de contacto muy largo
+    test('should fail if newContactoPuesto is too long', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111011', direccionFisica: 'Base'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      const response = await request(app).put(`/api/providers/${id}`).send({ newContactoPuesto: 'a'.repeat(101) });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('El puesto de contacto no puede exceder 100 caracteres');
+    });
+
+    // Prueba PUT con telefono no-string (cubre rama 'else' del ternario)
+    test('should set empty string if newTelefonoPrincipal is not a string', async () => {
+      const res = await request(app).post('/api/providers').send({
+        nombreFiscal: 'Base', rucNitNif: '1111111111012', direccionFisica: 'Base', telefonoPrincipal: '555-0000'
+      });
+      const id = res.body.provider.idProveedor;
+      
+      // Enviamos un tipo incorrecto
+      const response = await request(app).put(`/api/providers/${id}`).send({ newTelefonoPrincipal: 1234567 });
+      
+      expect(response.statusCode).toBe(200); // La actualizacion es exitosa
+      expect(response.body.provider.telefonoPrincipal).toBe(''); // Se setea a '' como define la lógica
     });
   });
 
   describe('DELETE /api/providers/:id', () => {
+    // Prueba DELETE para borrar un proveedor
     test('should delete a specific provider successfully', async () => {
       // Crear un proveedor para eliminación
       const proveedorParaBorrar = {
@@ -267,6 +433,7 @@ describe('Provider API', () => {
       expect(getResponse.statusCode).toBe(404);
     });
 
+    // Prueba DELETE proveedor inexistente
     test('should throw 404 if provider does not exist', async () => {
       const response = await request(app).delete('/api/providers/ID-FALSO-123');
 

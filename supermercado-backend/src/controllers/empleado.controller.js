@@ -92,9 +92,9 @@ function updateExistingEmpleado(req, res) {
 
     const updatedEmpleado = {
         cedulaEmpleado: oldEmpleado.cedulaEmpleado,
-        nombreEmpleado: newNombreEmpleado || oldEmpleado.nombreEmpleado,
+        nombreEmpleado: newNombreEmpleado !== undefined ? newNombreEmpleado : oldEmpleado.nombreEmpleado,
         emailEmpleado: newEmailEmpleado !== undefined ? newEmailEmpleado : oldEmpleado.emailEmpleado,
-        celularEmpleado: newCelularEmpleado || oldEmpleado.celularEmpleado,
+        celularEmpleado: newCelularEmpleado !== undefined ? newCelularEmpleado : oldEmpleado.celularEmpleado,
         sueldoEmpleado: newSueldoEmpleado !== undefined ? newSueldoEmpleado : oldEmpleado.sueldoEmpleado
     };
     

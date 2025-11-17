@@ -177,6 +177,30 @@ describe('Empleado API', () => {
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toBe('El sueldo debe ser mayor a 0');
     });
+
+    test('should update only celular and preserve salary', async () => {
+      const empleadoPrueba = {
+        cedulaEmpleado: '1919191919',
+        nombreEmpleado: 'Test Celular',
+        celularEmpleado: '0900000001',
+        sueldoEmpleado: 1000,
+      };
+      await request(app).post('/api/empleados').send(empleadoPrueba);
+
+      const datosActualizados = {
+        newCelularEmpleado: '0911111111',
+      };
+
+      const response = await request(app)
+        .put(`/api/empleados/${empleadoPrueba.cedulaEmpleado}`)
+        .send(datosActualizados);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.empleado.celularEmpleado).toBe('0911111111');
+      expect(response.body.empleado.sueldoEmpleado).toBe(1000); 
+      expect(response.body.empleado.nombreEmpleado).toBe('Test Celular');
+    });
+
   });
 
   describe('DELETE /api/empleados/:cedula', () => {
