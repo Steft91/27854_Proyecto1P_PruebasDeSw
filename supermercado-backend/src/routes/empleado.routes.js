@@ -1,28 +1,29 @@
 const express = require('express');
+const checkRole = require('../middleware/roleMiddleware');
 
-const { 
-    getListEmpleado, 
-    createNewEmpleado, 
-    getEmpleadoByCedula, 
-    updateExistingEmpleado, 
-    deleteEmpleado 
+const {
+  getListEmpleado,
+  createNewEmpleado,
+  getEmpleadoByCedula,
+  updateExistingEmpleado,
+  deleteEmpleado,
 } = require('../controllers/empleado.controller');
 
 const router = express.Router();
 
+// Solo administradores pueden gestionar empleados
 // GET /api/empleados  (Get all empleados)
-router.get('/', getListEmpleado);
+router.get('/', checkRole(['administrador']), getListEmpleado);
 // POST /api/empleados (Create a new empleado)
-router.post('/', createNewEmpleado);
+router.post('/', checkRole(['administrador']), createNewEmpleado);
 
 // GET /api/empleados/:cedula (Get a specific empleado)
-router.get('/:cedula', getEmpleadoByCedula);
+router.get('/:cedula', checkRole(['administrador']), getEmpleadoByCedula);
 
 // PUT /api/empleados/:cedula (Update a specific empleado)
-router.put('/:cedula', updateExistingEmpleado);
+router.put('/:cedula', checkRole(['administrador']), updateExistingEmpleado);
 
 // DELETE /api/empleados/:cedula (Delete a specific empleado)
-router.delete('/:cedula', deleteEmpleado);
-
+router.delete('/:cedula', checkRole(['administrador']), deleteEmpleado);
 
 module.exports = router;
