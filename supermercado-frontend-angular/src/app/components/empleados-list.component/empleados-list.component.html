@@ -1,13 +1,13 @@
 <div class="list-container">
     <h2>Equipo de Empleados</h2>
 
-    <div *ngIf="loading">Cargando...</div>
+    <div *ngIf="loading()">Cargando...</div>
 
-    <p *ngIf="!loading && empleados.length === 0" class="empty-message">
+    <p *ngIf="!loading() && empleados().length === 0" class="empty-message">
         No tiene acceso a este contenido o no existen clientes registrados.
     </p>
 
-    <div *ngIf="!loading && empleados.length > 0" class="table-wrapper">
+    <div *ngIf="!loading() && empleados().length > 0" class="table-wrapper">
     <table class="data-table">
         <thead>
         <tr>
@@ -19,7 +19,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let emp of empleados">
+        <tr *ngFor="let emp of empleados()">
             <td data-label="Cédula">{{ emp.cedulaEmpleado }}</td>
 
             <td data-label="Nombre">{{ emp.nombreEmpleado }}</td>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../models';
@@ -9,48 +9,50 @@ import { Producto } from '../../models';
   imports: [CommonModule],
   templateUrl: './productos-list.component.html'
 })
-export class ProductosListComponent implements OnInit, OnChanges {
-  @Input() refreshTrigger = 0;
+export class ProductosListComponent implements OnInit {
   @Output() editar = new EventEmitter<Producto>();
 
-  productos: any[] = [];
-  loading = false;
+  // Estado reactivo con Signals
+  productos = signal<Producto[]>([]);
+  loading = signal<boolean>(false);
 
-  constructor(private service: ProductoService, private cd: ChangeDetectorRef) {}
+  constructor(private service: ProductoService) {}
 
-  ngOnInit() { this.cargar(); }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) this.cargar();
+  ngOnInit() {
+    this.cargar();
   }
 
+  // Método público para recargar la lista
   cargar() {
-    this.loading = true;
+    this.loading.set(true);
+    
     this.service.obtenerTodos().subscribe({
-      next: (data) => { 
-        console.log('Datos recibidos del backend:', data);
-        
+      next: (data) => {
+        // Validación de array para seguridad
         if (Array.isArray(data)) {
-          this.productos = data;
+          this.productos.set(data);
         } else {
           console.error('El formato recibido no es un array:', data);
-          this.productos = [];
+          this.productos.set([]);
         }
-
-        this.loading = false;
-        this.cd.detectChanges(); 
+        this.loading.set(false);
       },
       error: (e) => {
-        console.error('Error al cargar proveedores:', e);
-        this.loading = false;
-        this.cd.detectChanges();
+        console.error('Error al cargar productos:', e);
+        this.loading.set(false);
       }
     });
   }
 
   onEliminar(code: string) {
-    if (confirm('¿Eliminar producto?')) {
-      this.service.eliminar(code).subscribe(() => this.cargar());
-    }
+    if (!confirm('¿Eliminar producto?')) return;
+
+    this.service.eliminar(code).subscribe({
+      next: () => {
+        alert('Producto eliminado correctamente');
+        this.cargar(); // Recargamos la lista
+      },
+      error: (e) => alert('Error al eliminar: ' + (e.error?.message || e.message))
+    });
   }
 }

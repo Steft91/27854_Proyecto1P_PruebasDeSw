@@ -1,12 +1,12 @@
 <div class="list-container">
   <h2>Proveedores Registrados</h2>
-  <div *ngIf="loading">Cargando...</div>
+  <div *ngIf="loading()">Cargando...</div>
 
-  <p *ngIf="!loading && proveedores.length === 0" class="empty-message">
+  <p *ngIf="!loading() && proveedores().length === 0" class="empty-message">
     No tiene acceso a este contenido o no existen clientes registrados.
   </p>
 
-  <div *ngIf="!loading && proveedores.length > 0" class="table-wrapper">
+  <div *ngIf="!loading() && proveedores().length > 0" class="table-wrapper">
     <table class="data-table">
       <thead>
         <tr>
@@ -19,7 +19,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let prov of proveedores">
+        <tr *ngFor="let prov of proveedores()">
           <td data-label="RUC/NIT">{{ prov.rucNitNif }}</td>
           
           <td data-label="Nombre Fiscal" style="font-weight: 500;">

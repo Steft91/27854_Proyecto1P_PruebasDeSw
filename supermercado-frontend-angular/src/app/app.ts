@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
+import { Cliente, Proveedor, Producto, Empleado } from './models';
 import { ClientesListComponent } from './components/clientes-list.component/clientes-list.component';
 import { ClienteFormComponent } from './components/cliente-form.component/cliente-form.component';
 import { ProveedorListComponent } from './components/proveedor-list.component/proveedor-list.component';
@@ -28,26 +29,27 @@ import { RegisterComponent } from './components/register.component/register.comp
   styleUrls: ['./app.css']
 })
 export class App implements OnInit {
-  // ==========================================
+  // REFERENCIAS A COMPONENTES HIJOS
+  @ViewChild(ClientesListComponent) listaClientes!: ClientesListComponent;
+  @ViewChild(ProveedorListComponent) listaProveedores!: ProveedorListComponent;
+  @ViewChild(ProductosListComponent) listaProductos!: ProductosListComponent;
+  @ViewChild(EmpleadosListComponent) listaEmpleados!: EmpleadosListComponent;
+
   // ESTADO DE AUTENTICACIÓN
-  // ==========================================
   isAuthenticated = false;
-  showRegister = false; 
+  showRegister = false;
   
   loginData = { username: '', password: '' };
   loginError = '';
 
-  // ==========================================
   // ESTADO DEL DASHBOARD
-  // ==========================================
-  activeTab: string = 'clientes'; 
-  refreshTrigger: number = 0;
+  activeTab: 'clientes' | 'proveedores' | 'productos' | 'empleados' = 'clientes'; // Tipado estricto
 
-  // Objetos para edición
-  clienteEditar: any = null;
-  proveedorEditar: any = null;
-  productoEditar: any = null;
-  empleadoEditar: any = null;
+  // OBJETOS PARA EDICIÓN (Tipado estricto)
+  clienteEditar: Cliente | null = null;
+  proveedorEditar: Proveedor | null = null;
+  productoEditar: Producto | null = null;
+  empleadoEditar: Empleado | null = null;
 
   constructor(private authService: AuthService) {}
 
@@ -55,9 +57,7 @@ export class App implements OnInit {
     this.isAuthenticated = this.authService.isLoggedIn();
   }
 
-  // ==========================================
-  // MÉTODOS DE AUTH
-  // ==========================================
+  // AUTH
   onLogin() {
     if (!this.loginData.username || !this.loginData.password) {
       this.loginError = 'Por favor completa todos los campos.';
@@ -69,9 +69,7 @@ export class App implements OnInit {
         this.isAuthenticated = true;
         this.loginError = '';
         this.loginData = { username: '', password: '' };
-
         this.activeTab = 'clientes';
-        this.refreshTrigger++; 
       },
       error: (err) => {
         console.error(err);
@@ -84,7 +82,7 @@ export class App implements OnInit {
     this.authService.logout();
     this.isAuthenticated = false;
     this.showRegister = false;
-    this.activeTab = 'clientes';
+    this.loginData = { username: '', password: '' };
   }
 
   toggleRegister() {
@@ -92,45 +90,58 @@ export class App implements OnInit {
     this.loginError = '';
   }
 
-  // ==========================================
   // NAVEGACIÓN
-  // ==========================================
   cambiarTab(tab: string) {
-    this.activeTab = tab;
+    this.activeTab = tab as any;
     this.cancelarEdicion();
   }
 
-  // ==========================================
-  // GESTIÓN DE EDICIÓN
-  // ==========================================
-  setEditCliente(cliente: any) {
+
+  // GESTIÓN DE EDICIÓN (Setters)
+  setEditCliente(cliente: Cliente) {
     this.clienteEditar = cliente;
     this.scrollToTop();
   }
 
-  setEditProveedor(proveedor: any) {
+  setEditProveedor(proveedor: Proveedor) {
     this.proveedorEditar = proveedor;
     this.scrollToTop();
   }
 
-  setEditProducto(producto: any) {
+  setEditProducto(producto: Producto) {
     this.productoEditar = producto;
     this.scrollToTop();
   }
 
-  setEditEmpleado(empleado: any) {
+  setEditEmpleado(empleado: Empleado) {
     this.empleadoEditar = empleado;
     this.scrollToTop();
   }
 
-  // ==========================================
-  // ACCIONES COMUNES
-  // ==========================================
-  handleGuardadoExitoso() {
-    this.cancelarEdicion(); 
-    this.refreshTrigger++;
+
+  // MANEJADORES DE GUARDADO (Callbacks)
+  onClienteGuardado() {
+    this.cancelarEdicion();
+    this.listaClientes.cargarClientes();
   }
 
+  onProveedorGuardado() {
+    this.cancelarEdicion();
+    this.listaProveedores.cargar();
+  }
+
+  onProductoGuardado() {
+    this.cancelarEdicion();
+    this.listaProductos.cargar();
+  }
+
+  onEmpleadoGuardado() {
+    this.cancelarEdicion();
+    this.listaEmpleados.cargar();
+  }
+
+
+  // UTILIDADES
   cancelarEdicion() {
     this.clienteEditar = null;
     this.proveedorEditar = null;

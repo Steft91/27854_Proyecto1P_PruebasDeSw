@@ -1,1 +1,64 @@
-<p>producto-form.component works!</p>
+<div class="form-container">
+    <h2>{{ productoEditar ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+    
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="data-form">
+    
+    <div class="form-row" style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+        <label>Código de Producto <span class="required">*</span></label>
+        <input formControlName="codeProduct" placeholder="Ej: PROD001"
+                [class.invalid]="isFieldInvalid('codeProduct')">
+        <small *ngIf="isFieldInvalid('codeProduct')" class="error-text">
+            Requerido (3-10 letras seguidas de números).
+        </small>
+        </div>
+
+        <div class="form-group" style="flex: 2;">
+        <label>Nombre del Producto <span class="required">*</span></label>
+        <input formControlName="nameProduct"
+                [class.invalid]="isFieldInvalid('nameProduct')">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Descripción <span class="required">*</span></label>
+        <textarea formControlName="descriptionProduct" rows="2" 
+                style="width:100%; padding:0.5rem; border:1px solid #e2e8f0; border-radius:6px;"
+                [class.invalid]="isFieldInvalid('descriptionProduct')"></textarea>
+    </div>
+
+    <div class="form-row" style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+        <label>Precio ($) <span class="required">*</span></label>
+        <input type="number" formControlName="priceProduct" step="0.01"
+                [class.invalid]="isFieldInvalid('priceProduct')">
+        </div>
+        <div class="form-group" style="flex: 1;">
+        <label>Stock <span class="required">*</span></label>
+        <input type="number" formControlName="stockProduct"
+                [class.invalid]="isFieldInvalid('stockProduct')">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Proveedor</label>
+        <select formControlName="proveedor" [class.invalid]="isFieldInvalid('proveedor')">
+        <option [ngValue]="null">-- Seleccione --</option>
+        <option *ngFor="let prov of proveedores$ | async" [value]="prov._id">
+            {{ prov.nombreFiscal }}
+        </option>
+        </select>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+        </button>
+        
+        <button *ngIf="productoEditar || form.dirty" type="button" class="btn-secondary" 
+                (click)="reset()" [disabled]="isSubmitting">
+        Cancelar
+        </button>
+    </div>
+    </form>
+</div>

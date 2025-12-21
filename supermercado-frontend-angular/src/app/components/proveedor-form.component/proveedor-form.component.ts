@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor } from '../../models';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-proveedor-form',
@@ -16,6 +17,7 @@ export class ProveedorFormComponent implements OnChanges {
   @Output() cancelar = new EventEmitter<void>();
 
   form: FormGroup;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private service: ProveedorService) {
     this.form = this.fb.group({
@@ -23,47 +25,66 @@ export class ProveedorFormComponent implements OnChanges {
       rucNitNif: ['', [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       direccionFisica: ['', Validators.required],
       telefonoPrincipal: ['', Validators.pattern(/^[\d\s\-+()]{7,20}$/)],
-      correoElectronico: ['', Validators.email],
+      correoElectronico: ['', [Validators.email]], 
       contactoNombre: ['', Validators.maxLength(100)],
       contactoPuesto: ['', Validators.maxLength(100)]
     });
   }
 
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
     if (this.proveedorEditar) {
       this.form.patchValue(this.proveedorEditar);
+      this.form.get('rucNitNif')?.disable(); 
     } else {
-      this.form.reset();
+      this.resetFormState();
     }
   }
 
   onSubmit() {
-    if (this.form.invalid) return;
-    const data = this.form.value;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    const data = this.form.getRawValue();
+    let request$: Observable<any>;
 
     if (this.proveedorEditar && this.proveedorEditar._id) {
-      this.service.actualizar(this.proveedorEditar._id, data).subscribe({
-        next: () => {
-          alert('Proveedor actualizado');
-          this.reset();
-          this.guardar.emit();
-        },
-        error: (e) => alert('Error: ' + e.message)
-      });
+      request$ = this.service.actualizar(this.proveedorEditar._id, data);
     } else {
-      this.service.crear(data).subscribe({
-        next: () => {
-          alert('Proveedor creado');
-          this.reset();
-          this.guardar.emit();
-        },
-        error: (e) => alert('Error: ' + e.message)
-      });
+      request$ = this.service.crear(data);
     }
+
+    request$.subscribe({
+      next: () => {
+        alert(this.proveedorEditar ? 'Proveedor actualizado' : 'Proveedor creado');
+        this.guardar.emit();
+        this.reset();
+      },
+      error: (e: any) => {
+        console.error(e);
+        alert('Error: ' + (e.error?.message || e.message));
+        this.isSubmitting = false;
+      },
+      complete: () => {
+        this.isSubmitting = false;
+      }
+    });
   }
 
   reset() {
-    this.form.reset();
+    this.resetFormState();
     this.cancelar.emit();
+  }
+
+  private resetFormState() {
+    this.form.reset();
+    this.isSubmitting = false;
+  }
+
+  isFieldInvalid(field: string): boolean {
+    const control = this.form.get(field);
+    return !!(control && control.invalid && (control.dirty || control.touched));
   }
 }

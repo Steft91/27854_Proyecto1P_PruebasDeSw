@@ -1,8 +1,8 @@
 <div class="list-container">
     <h2>Inventario de Productos</h2>
-    <div *ngIf="loading" class="loading-spinner">Cargando...</div>
+    <div *ngIf="loading()" class="loading-spinner">Cargando...</div>
 
-    <div *ngIf="!loading && productos.length > 0" class="table-wrapper">
+    <div *ngIf="!loading() && productos().length > 0" class="table-wrapper">
     <table class="data-table">
         <thead>
         <tr>
@@ -15,7 +15,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let prod of productos">
+        <tr *ngFor="let prod of productos()">
             <td data-label="Código">{{ prod.codeProduct }}</td>
 
             <td data-label="Producto">
@@ -34,7 +34,7 @@
             </td>
 
             <td data-label="Proveedor">
-            {{ prod.proveedor?.nombreFiscal || 'Sin Asignar' }}
+                {{ $any(prod.proveedor)?.nombreFiscal || 'Sin Asignar' }}
             </td>
 
             <td class="actions-cell" data-label="Acciones">
@@ -54,7 +54,7 @@
     </table>
     </div>
     
-    <p *ngIf="!loading && productos.length === 0" class="empty-message">
+    <p *ngIf="!loading() && productos().length === 0" class="empty-message">
         No tiene acceso a este contenido o no existen clientes registrados.
     </p>
 </div>

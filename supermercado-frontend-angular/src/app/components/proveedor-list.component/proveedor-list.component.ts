@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor } from '../../models';
@@ -9,42 +9,34 @@ import { Proveedor } from '../../models';
   imports: [CommonModule],
   templateUrl: './proveedor-list.component.html'
 })
-export class ProveedorListComponent implements OnInit, OnChanges {
-  @Input() refreshTrigger = 0;
+export class ProveedorListComponent implements OnInit {
   @Output() editar = new EventEmitter<Proveedor>();
 
-  proveedores: Proveedor[] = [];
-  loading = false;
+  proveedores = signal<Proveedor[]>([]);
+  loading = signal<boolean>(false);
 
-  constructor(private service: ProveedorService, private cd: ChangeDetectorRef ) {}
+  constructor(private service: ProveedorService) {}
 
-  ngOnInit() { this.cargar(); }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) {
-      this.cargar();
-    }
+  ngOnInit() {
+    this.cargar();
   }
 
   cargar() {
-    this.loading = true;
+    this.loading.set(true);
+    
     this.service.obtenerTodos().subscribe({
       next: (data) => {
-        console.log('Datos recibidos del backend:', data);
         if (Array.isArray(data)) {
-          this.proveedores = data;
+          this.proveedores.set(data);
         } else {
           console.error('El formato recibido no es un array:', data);
-          this.proveedores = [];
+          this.proveedores.set([]);
         }
-
-        this.loading = false;
-        this.cd.detectChanges(); 
+        this.loading.set(false);
       },
       error: (e) => {
         console.error('Error al cargar proveedores:', e);
-        this.loading = false;
-        this.cd.detectChanges();
+        this.loading.set(false);
       }
     });
   }

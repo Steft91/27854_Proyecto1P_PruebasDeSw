@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { EmpleadoService } from '../../services/empleado.service';
+import { Empleado } from '../../models';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-empleado-form',
@@ -10,87 +12,145 @@ import { EmpleadoService } from '../../services/empleado.service';
   template: `
     <div class="form-container">
       <h2>{{ empleadoEditar ? 'Editar Empleado' : 'Contratar Empleado' }}</h2>
+      
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="data-form">
         
         <div class="form-row" style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
             <label>Cédula <span class="required">*</span></label>
-            <input formControlName="cedulaEmpleado" placeholder="10 dígitos">
+            <input formControlName="cedulaEmpleado" placeholder="10 dígitos" 
+                  [class.invalid]="isFieldInvalid('cedulaEmpleado')">
+            <small *ngIf="isFieldInvalid('cedulaEmpleado')" class="error-text">
+              Requerido, 10 dígitos.
+            </small>
           </div>
+
           <div class="form-group" style="flex:1;">
             <label>Sueldo ($) <span class="required">*</span></label>
-            <input type="number" formControlName="sueldoEmpleado">
+            <input type="number" formControlName="sueldoEmpleado" 
+                  [class.invalid]="isFieldInvalid('sueldoEmpleado')">
           </div>
         </div>
 
         <div class="form-group">
           <label>Nombre Completo <span class="required">*</span></label>
-          <input formControlName="nombreEmpleado">
+          <input formControlName="nombreEmpleado" 
+                [class.invalid]="isFieldInvalid('nombreEmpleado')">
         </div>
 
         <div class="form-row" style="display:flex; gap:10px;">
           <div class="form-group" style="flex:1;">
             <label>Celular <span class="required">*</span></label>
-            <input formControlName="celularEmpleado">
+            <input formControlName="celularEmpleado" 
+                  [class.invalid]="isFieldInvalid('celularEmpleado')">
           </div>
           <div class="form-group" style="flex:1;">
             <label>Correo Electrónico</label>
-            <input type="email" formControlName="emailEmpleado">
+            <input type="email" formControlName="emailEmpleado" 
+                  [class.invalid]="isFieldInvalid('emailEmpleado')">
+            <small *ngIf="hasError('emailEmpleado', 'email')" class="error-text">
+              Email inválido.
+            </small>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn-primary" [disabled]="form.invalid">Guardar</button>
-          <button *ngIf="empleadoEditar" type="button" class="btn-secondary" (click)="reset()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+          </button>
+          
+          <button *ngIf="empleadoEditar || form.dirty" type="button" class="btn-secondary" 
+                  (click)="reset()" [disabled]="isSubmitting">
+            Cancelar
+          </button>
         </div>
       </form>
     </div>
-  `
+  `,
+  styles: [`
+    .error-text { color: red; font-size: 0.8em; display: block; margin-top: 4px; }
+    input.invalid { border-color: red; }
+  `]
 })
 export class EmpleadoFormComponent implements OnChanges {
-  @Input() empleadoEditar: any | null = null;
+  @Input() empleadoEditar: Empleado | null = null;
   @Output() guardar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   
   form: FormGroup;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private service: EmpleadoService) {
     this.form = this.fb.group({
       cedulaEmpleado: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       nombreEmpleado: ['', Validators.required],
-      emailEmpleado: ['', Validators.email],
+      emailEmpleado: ['', [Validators.email]],
       celularEmpleado: ['', Validators.required],
       sueldoEmpleado: [460, [Validators.required, Validators.min(1)]]
     });
   }
 
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChanges) {
     if (this.empleadoEditar) {
       this.form.patchValue(this.empleadoEditar);
       this.form.get('cedulaEmpleado')?.disable();
     } else {
-      this.form.reset({ sueldoEmpleado: 460 });
-      this.form.get('cedulaEmpleado')?.enable();
+      this.resetFormState();
     }
   }
 
   onSubmit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
     const data = this.form.getRawValue();
 
-    const req = this.empleadoEditar
-      ? this.service.actualizar(this.empleadoEditar.cedulaEmpleado, data)
-      : this.service.crear(data);
+    let request$: Observable<any>;
 
-    req.subscribe({
-      next: () => { alert('Éxito'); this.reset(); this.guardar.emit(); },
-      error: (e) => alert('Error: ' + (e.error?.message || e.message))
+    if (this.empleadoEditar) {
+      request$ = this.service.actualizar(this.empleadoEditar.cedulaEmpleado, data);
+    } else {
+      request$ = this.service.crear(data);
+    }
+
+    request$.subscribe({
+      next: () => {
+        alert(this.empleadoEditar ? 'Empleado actualizado' : 'Empleado contratado');
+        this.guardar.emit();
+        this.reset();
+      },
+      error: (e: any) => {
+        console.error(e);
+        alert('Error: ' + (e.error?.message || e.message));
+        this.isSubmitting = false;
+      },
+      complete: () => {
+        this.isSubmitting = false;
+      }
     });
   }
 
   reset() {
-    this.form.reset();
-    this.form.get('cedulaEmpleado')?.enable();
+    this.resetFormState();
     this.cancelar.emit();
+  }
+
+  private resetFormState() {
+    this.form.reset({ sueldoEmpleado: 460 });
+    this.form.get('cedulaEmpleado')?.enable();
+    this.isSubmitting = false;
+  }
+
+  isFieldInvalid(field: string): boolean {
+    const control = this.form.get(field);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  hasError(field: string, errorType: string): boolean {
+    const control = this.form.get(field);
+    return !!(control && control.hasError(errorType) && (control.dirty || control.touched));
   }
 }

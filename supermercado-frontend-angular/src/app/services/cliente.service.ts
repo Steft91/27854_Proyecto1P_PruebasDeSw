@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Cliente } from '../models';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteService {
-  private apiUrl = 'http://localhost:3000/api/clients';
+  private apiUrl = `${environment.apiUrl}/clients`;
 
   constructor(private http: HttpClient) {}
 
@@ -18,7 +19,7 @@ export class ClienteService {
     return this.http.post<Cliente>(this.apiUrl, cliente);
   }
 
-  actualizar(dni: string, cliente: Cliente): Observable<any> {
+  actualizar(dni: string, cliente: Cliente): Observable<void> {
     const payload = {
       newNameClient: cliente.nameClient,
       newSurnameClient: cliente.surnameClient,
@@ -26,7 +27,7 @@ export class ClienteService {
       newEmailClient: cliente.emailClient,
       newPhoneClient: cliente.phoneClient
     };
-    return this.http.put(`${this.apiUrl}/${dni}`, payload);
+    return this.http.put<void>(`${this.apiUrl}/${dni}`, payload);
   }
 
   eliminar(dni: string): Observable<any> {

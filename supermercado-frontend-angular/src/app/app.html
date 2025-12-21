@@ -62,7 +62,6 @@
     </div>
   </div>
 
-
   <div *ngIf="isAuthenticated">
     
     <header class="app-header">
@@ -78,24 +77,16 @@
     </header>
 
     <nav class="tabs">
-      <button 
-        [class]="activeTab === 'clientes' ? 'tab active' : 'tab'"
-        (click)="cambiarTab('clientes')">
+      <button [class.active]="activeTab === 'clientes'" (click)="cambiarTab('clientes')" class="tab">
         👥 Clientes
       </button>
-      <button 
-        [class]="activeTab === 'proveedores' ? 'tab active' : 'tab'"
-        (click)="cambiarTab('proveedores')">
+      <button [class.active]="activeTab === 'proveedores'" (click)="cambiarTab('proveedores')" class="tab">
         🏭 Proveedores
       </button>
-      <button 
-        [class]="activeTab === 'productos' ? 'tab active' : 'tab'"
-        (click)="cambiarTab('productos')">
+      <button [class.active]="activeTab === 'productos'" (click)="cambiarTab('productos')" class="tab">
         📦 Productos
       </button>
-      <button 
-        [class]="activeTab === 'empleados' ? 'tab active' : 'tab'"
-        (click)="cambiarTab('empleados')">
+      <button [class.active]="activeTab === 'empleados'" (click)="cambiarTab('empleados')" class="tab">
         👔 Empleados
       </button>
     </nav>
@@ -105,12 +96,12 @@
       <div *ngIf="activeTab === 'clientes'" class="tab-content fade-in">
         <app-cliente-form
           [clienteEditar]="clienteEditar"
-          (guardar)="handleGuardadoExitoso()"
+          (guardar)="onClienteGuardado()" 
           (cancelar)="cancelarEdicion()">
         </app-cliente-form>
 
         <app-clientes-list
-          [refreshTrigger]="refreshTrigger"
+          #listaClientes
           (editar)="setEditCliente($event)">
         </app-clientes-list>
       </div>
@@ -118,12 +109,12 @@
       <div *ngIf="activeTab === 'proveedores'" class="tab-content fade-in">
         <app-proveedor-form
           [proveedorEditar]="proveedorEditar"
-          (guardar)="handleGuardadoExitoso()"
+          (guardar)="onProveedorGuardado()"
           (cancelar)="cancelarEdicion()">
         </app-proveedor-form>
 
         <app-proveedor-list
-          [refreshTrigger]="refreshTrigger"
+          #listaProveedores
           (editar)="setEditProveedor($event)">
         </app-proveedor-list>
       </div>
@@ -131,12 +122,12 @@
       <div *ngIf="activeTab === 'productos'" class="tab-content fade-in">
         <app-producto-form
           [productoEditar]="productoEditar"
-          (guardar)="handleGuardadoExitoso()"
+          (guardar)="onProductoGuardado()"
           (cancelar)="cancelarEdicion()">
         </app-producto-form>
 
         <app-productos-list
-          [refreshTrigger]="refreshTrigger"
+          #listaProductos
           (editar)="setEditProducto($event)">
         </app-productos-list>
       </div>
@@ -144,12 +135,12 @@
       <div *ngIf="activeTab === 'empleados'" class="tab-content fade-in">
         <app-empleado-form
           [empleadoEditar]="empleadoEditar"
-          (guardar)="handleGuardadoExitoso()"
+          (guardar)="onEmpleadoGuardado()"
           (cancelar)="cancelarEdicion()">
         </app-empleado-form>
 
         <app-empleados-list
-          [refreshTrigger]="refreshTrigger"
+          #listaEmpleados
           (editar)="setEditEmpleado($event)">
         </app-empleados-list>
       </div>
@@ -157,7 +148,7 @@
     </main>
 
     <footer class="app-footer">
-      <p>© 2025 Sistema de Gestión de Supermercado - Versión Angular</p>
+      <p>© 2025 Sistema de Gestión de Supermercado - Refactorización Angular</p>
     </footer>
 
   </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core'; // <--- Importa ChangeDetectorRef
+import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClienteService } from '../../services/cliente.service';
 import { Cliente } from '../../models';
@@ -9,49 +9,28 @@ import { Cliente } from '../../models';
   imports: [CommonModule],
   templateUrl: './clientes-list.component.html',
 })
-export class ClientesListComponent implements OnInit, OnChanges {
-  @Input() refreshTrigger = 0; 
+export class ClientesListComponent implements OnInit {
   @Output() editar = new EventEmitter<Cliente>();
+  clientes = signal<Cliente[]>([]); 
+  loading = signal<boolean>(false);
 
-  clientes: Cliente[] = [];
-  loading = false;
-
-  constructor(
-    private clienteService: ClienteService,
-    private cd: ChangeDetectorRef 
-  ) {}
+  constructor(private clienteService: ClienteService) {}
 
   ngOnInit() {
     this.cargarClientes();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) {
-      this.cargarClientes();
-    }
-  }
-
   cargarClientes() {
-    this.loading = true;
+    this.loading.set(true);
     
     this.clienteService.obtenerTodos().subscribe({
-      next: (data: any) => {
-        console.log('Datos recibidos del backend:', data);
-
-        if (Array.isArray(data)) {
-          this.clientes = data;
-        } else {
-          console.error('El formato recibido no es un array:', data);
-          this.clientes = [];
-        }
-
-        this.loading = false;
-        this.cd.detectChanges(); 
+      next: (data) => {
+        this.clientes.set(data);
+        this.loading.set(false);
       },
       error: (e) => {
         console.error('Error al cargar clientes:', e);
-        this.loading = false;
-        this.cd.detectChanges();
+        this.loading.set(false);
       }
     });
   }
@@ -62,7 +41,7 @@ export class ClientesListComponent implements OnInit, OnChanges {
     this.clienteService.eliminar(dni).subscribe({
       next: () => {
         alert('Cliente eliminado correctamente');
-        this.cargarClientes();
+        this.cargarClientes(); 
       },
       error: (e) => alert('Error al eliminar: ' + (e.error?.message || e.message))
     });
