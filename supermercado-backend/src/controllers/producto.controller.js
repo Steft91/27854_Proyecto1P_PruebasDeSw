@@ -111,6 +111,7 @@ async function createNewProduct(req, res) {
       });
     }
 
+    //Error (regresión)
     // 5. VALIDACIÓN DE PRECIO NO NEGATIVO
     if (priceProduct <= 0) {
       return res.status(400).json({ message: 'El precio debe ser mayor a 0' });
@@ -149,6 +150,7 @@ async function createNewProduct(req, res) {
     const existingProduct = await Producto.findOne({
       codeProduct: codeProduct.trim(),
     });
+    //error (regresión)
     if (existingProduct) {
       return res
         .status(409)
