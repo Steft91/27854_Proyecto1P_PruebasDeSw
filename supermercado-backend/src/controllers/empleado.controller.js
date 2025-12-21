@@ -1,6 +1,50 @@
 const Empleado = require('../models/Empleado');
 
 /**
+ * Valida cédula ecuatoriana con algoritmo de dígito verificador
+ * @param {string} cedula - Cédula de 10 dígitos
+ * @returns {boolean} - true si es válida, false si no
+ */
+const isValidEcuadorianCedula = (cedula) => {
+  // Verificar que tenga 10 dígitos
+  if (!/^\d{10}$/.test(cedula)) {
+    return false;
+  }
+
+  // Extraer los dígitos
+  const digits = cedula.split('').map(Number);
+
+  // Los primeros 2 dígitos representan la provincia (01-24)
+  const province = parseInt(cedula.substring(0, 2));
+  if (province < 1 || province > 24) {
+    return false;
+  }
+
+  // El tercer dígito debe ser menor a 6 (para cédulas de personas naturales)
+  if (digits[2] >= 6) {
+    return false;
+  }
+
+  // Algoritmo de validación del dígito verificador
+  const coefficients = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+  let sum = 0;
+
+  for (let i = 0; i < 9; i++) {
+    let value = digits[i] * coefficients[i];
+    if (value >= 10) {
+      value -= 9;
+    }
+    sum += value;
+  }
+
+  // Calcular el dígito verificador
+  const verifier = sum % 10 === 0 ? 0 : 10 - (sum % 10);
+
+  // Comparar con el último dígito de la cédula
+  return verifier === digits[9];
+};
+
+/**
  * @route GET /empleados
  * @description Obtiene todos los empleados
  */
@@ -59,10 +103,10 @@ async function createNewEmpleado(req, res) {
       });
     }
 
-    // Validación de cédula ecuatoriana (10 dígitos)
-    if (!/^\d{10}$/.test(cedulaEmpleado)) {
+    // Validación de cédula ecuatoriana con dígito verificador
+    if (!isValidEcuadorianCedula(cedulaEmpleado)) {
       return res.status(400).json({
-        message: 'Cédula ecuatoriana inválida (debe tener 10 dígitos)',
+        message: 'Cédula ecuatoriana inválida',
       });
     }
 

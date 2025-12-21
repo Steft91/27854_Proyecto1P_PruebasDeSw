@@ -7,6 +7,50 @@ const isStringAndNotEmpty = (value) =>
   typeof value === 'string' && value.trim().length > 0;
 
 /**
+ * Valida cédula ecuatoriana con algoritmo de dígito verificador
+ * @param {string} cedula - Cédula de 10 dígitos
+ * @returns {boolean} - true si es válida, false si no
+ */
+const isValidEcuadorianCedula = (cedula) => {
+  // Verificar que tenga 10 dígitos
+  if (!/^\d{10}$/.test(cedula)) {
+    return false;
+  }
+
+  // Extraer los dígitos
+  const digits = cedula.split('').map(Number);
+
+  // Los primeros 2 dígitos representan la provincia (01-24)
+  const province = parseInt(cedula.substring(0, 2));
+  if (province < 1 || province > 24) {
+    return false;
+  }
+
+  // El tercer dígito debe ser menor a 6 (para cédulas de personas naturales)
+  if (digits[2] >= 6) {
+    return false;
+  }
+
+  // Algoritmo de validación del dígito verificador
+  const coefficients = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+  let sum = 0;
+
+  for (let i = 0; i < 9; i++) {
+    let value = digits[i] * coefficients[i];
+    if (value >= 10) {
+      value -= 9;
+    }
+    sum += value;
+  }
+
+  // Calcular el dígito verificador
+  const verifier = sum % 10 === 0 ? 0 : 10 - (sum % 10);
+
+  // Comparar con el último dígito de la cédula
+  return verifier === digits[9];
+};
+
+/**
  * @route GET /clients
  * @description Obtiene todos los clientes
  */
@@ -55,12 +99,10 @@ async function createNewClient(req, res) {
 
     //Validacion de campos obligatorios
     if (!dniClient || !nameClient || !surnameClient || !addressClient) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Campos obligatorios faltantes (DNI, nombre, apellido o dirección)',
-        });
+      return res.status(400).json({
+        message:
+          'Campos obligatorios faltantes (DNI, nombre, apellido o dirección)',
+      });
     }
 
     if (
@@ -69,12 +111,10 @@ async function createNewClient(req, res) {
       !isStringAndNotEmpty(surnameClient) ||
       !isStringAndNotEmpty(addressClient)
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Los campos obligatorios deben ser texto válido y no estar vacíos',
-        });
+      return res.status(400).json({
+        message:
+          'Los campos obligatorios deben ser texto válido y no estar vacíos',
+      });
     }
 
     dniClient = dniClient.trim();
@@ -83,6 +123,13 @@ async function createNewClient(req, res) {
     addressClient = addressClient.trim();
     if (emailClient) emailClient = emailClient.trim();
     if (phoneClient) phoneClient = phoneClient.trim();
+
+    // Validar cédula ecuatoriana
+    if (!isValidEcuadorianCedula(dniClient)) {
+      return res.status(400).json({
+        message: 'Cédula ecuatoriana inválida',
+      });
+    }
 
     // Validaciones de formato para email y telefono
     if (emailClient && !isValidEmail(emailClient)) {
@@ -192,12 +239,10 @@ async function updateExistingClient(req, res) {
       { new: true }
     );
 
-    res
-      .status(200)
-      .json({
-        message: 'Cliente actualizado con exito',
-        client: updatedClient,
-      });
+    res.status(200).json({
+      message: 'Cliente actualizado con exito',
+      client: updatedClient,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
