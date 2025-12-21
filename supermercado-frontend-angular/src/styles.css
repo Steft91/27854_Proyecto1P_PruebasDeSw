@@ -1,0 +1,504 @@
+/* =========================================
+   1. VARIABLES & RESET (Paleta "Warm Minimalist")
+   ========================================= */
+:root {
+  /* --- COLORES PRINCIPALES --- */
+  /* Brand Color: El beige que te gusta, usado para fondos fuertes y branding */
+  --brand-color: #e8d4b8;       
+  --brand-dark: #d6c0a0;        /* Una versión un poco más oscura para bordes */
+
+  /* Action Color: Un Azul Pizarra Profundo para contraste. 
+     El beige y el azul oscuro son complementarios perfectos. */
+  --primary-color: #1e293b;     /* Dark Slate (Casi negro/azul) */
+  --primary-hover: #334155;     /* Un poco más claro al pasar el mouse */
+  --primary-text: #ffffff;      /* Texto blanco sobre el botón oscuro */
+
+  /* Colores Funcionales */
+  --secondary-color: #64748b;     /* Gris azulado suave */
+  --success-color: #059669;       /* Verde bosque (menos neón) */
+  --danger-color: #dc2626;        /* Rojo ladrillo (más cálido) */
+  --warning-color: #d97706;       /* Ocre/Ámbar (combina mejor con beige que el amarillo) */
+
+  /* --- FONDOS Y TEXTOS --- */
+  --bg-body: #fdfbf7;             /* Blanco crema muy suave (menos gris) */
+  --bg-card: #ffffff;             /* Blanco puro para tarjetas */
+  --bg-input: #f8fafc;            /* Fondo para inputs */
+  
+  --text-main: #1e293b;           /* Gris muy oscuro para lectura */
+  --text-muted: #64748b;          /* Texto secundario */
+  
+  --border-color: #e2e8f0;        /* Bordes sutiles */
+  --border-accent: #e8d4b8;       /* Borde decorativo usando tu color beige */
+
+  /* --- ESPACIADO Y RADIOS --- */
+  --radius-sm: 6px;
+  --radius-md: 12px;              /* Un poco más redondeado para modernidad */
+  
+  /* Sombras tintadas: Usan un poco de color marrón/gris en lugar de negro puro */
+  --shadow-sm: 0 1px 2px 0 rgba(30, 41, 59, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(30, 41, 59, 0.1), 0 2px 4px -2px rgba(30, 41, 59, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(30, 41, 59, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+/* =========================================
+   2. LAYOUT
+   ========================================= */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header: Usamos tu color Beige aquí, pero con texto oscuro para contraste */
+.app-header {
+  background-color: var(--brand-color);
+  color: #1a1a1a; /* Texto casi negro para que se lea bien sobre beige */
+  padding: 1.5rem 0;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--brand-dark);
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.app-header .subtitle {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px; /* Un poco más estrecho para mejor lectura */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border-color);
+  background: linear-gradient(to bottom, transparent, rgba(232, 212, 184, 0.2)); /* Gradiente sutil beige */
+}
+
+/* =========================================
+   3. TABS (Navegación)
+   ========================================= */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 3rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  color: var(--primary-color);
+  background-color: rgba(232, 212, 184, 0.3); /* Hover beige suave */
+}
+
+/* Estilo "Pill" (Pastilla) activo */
+.tab.active {
+  color: var(--primary-text);
+  background-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================
+   4. FORMULARIOS (Cards Limpias)
+   ========================================= */
+.form-container {
+  background-color: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 700px;
+  margin: 0 auto 3rem auto;
+  border: 1px solid var(--border-color);
+  /* Un detalle elegante: borde superior del color de marca */
+  border-top: 4px solid var(--brand-color);
+}
+
+.form-container h2 {
+  margin-bottom: 2rem;
+  font-size: 1.4rem;
+  color: var(--text-main);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--border-color); /* Borde un poco más grueso */
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-input);
+  transition: all 0.2s;
+  color: var(--text-main);
+}
+
+/* Focus usando el color de marca (Beige) o el Primario (Azul) */
+.form-group input:focus {
+  outline: none;
+  border-color: var(--brand-color); /* Foco color arena */
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(232, 212, 184, 0.4); /* Glow beige suave */
+}
+
+.required { color: var(--danger-color); }
+.error-text { color: var(--danger-color); font-size: 0.8rem; margin-top: 0.4rem; }
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* =========================================
+   5. BOTONES (Contraste Alto)
+   ========================================= */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+button:active { transform: translateY(1px); }
+
+/* Botón Primario: Oscuro para resaltar sobre el fondo claro */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--primary-text);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.btn-primary:disabled {
+  background-color: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Botón Secundario */
+.btn-secondary {
+  background-color: white;
+  border: 2px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  border-color: var(--brand-color); /* Borde beige al hover */
+  color: var(--primary-color);
+  background-color: #fff;
+}
+
+.btn-delete {
+  background-color: #fef2f2;
+  color: var(--danger-color);
+  border: 1px solid transparent;
+}
+.btn-delete:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.btn-edit {
+  background-color: #f0f9ff;
+  color: #0369a1;
+}
+.btn-edit:hover { background-color: #e0f2fe; }
+
+/* =========================================
+   6. TABLAS (Elegantes)
+   ========================================= */
+.list-container {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.list-container h2 {
+  padding: 1.5rem 2rem;
+  background-color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.data-table th {
+  background-color: var(--bg-input); /* Gris muy claro */
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  padding: 1.2rem 1.5rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.data-table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.data-table tr:hover {
+  background-color: #fdfaf5; /* Un sutil tono crema al pasar el mouse (el toque mágico) */
+}
+
+/* =========================================
+   BOTONES DE ICONO (Para Tablas)
+   ========================================= */
+
+/* Estilo base para el contenedor del botón */
+.btn-icon {
+  background: transparent; /* Fondo transparente por defecto */
+  border: none;
+  padding: 0.5rem; /* Padding pequeño y cuadrado */
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted); /* Color gris por defecto */
+}
+
+/* Estilo del SVG dentro del botón */
+.btn-icon svg {
+  width: 1.35rem;  /* Tamaño del icono (aprox 22px) */
+  height: 1.35rem;
+  stroke-width: 1.5; /* Grosor de línea moderno y fino */
+}
+
+/* Efecto Hover general: un ligero fondo gris */
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+
+/* --- Variación: Editar (Azul) --- */
+.btn-icon.btn-edit {
+  color: var(--primary-color); /* Usa tu azul oscuro Slate */
+}
+
+.btn-icon.btn-edit:hover {
+  /* Fondo azul muy sutil al pasar el mouse */
+  background-color: rgba(30, 41, 59, 0.1); 
+  color: var(--primary-hover);
+}
+
+
+/* --- Variación: Eliminar (Rojo) --- */
+.btn-icon.btn-delete {
+  color: var(--danger-color); /* Usa tu rojo cálido */
+}
+
+.btn-icon.btn-delete:hover {
+  /* Fondo rojo muy sutil al pasar el mouse */
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+
+/* Asegurar que la celda de acciones no se expanda demasiado */
+.actions-cell {
+    white-space: nowrap;
+    width: 1%; /* Truco para que la celda ocupe el mínimo espacio posible */
+}
+
+/* Ajuste para la vista móvil (tarjetas) */
+@media (max-width: 768px) {
+    .actions-cell {
+        width: auto;
+        /* En móvil los queremos a la derecha de la tarjeta */
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+    
+    /* En móvil, los iconos pueden ser un poco más grandes para el dedo */
+    .btn-icon {
+       padding: 0.7rem;
+    }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tabs { width: 100%; border-radius: 0; }
+  .form-container { padding: 1.5rem; border-top: none; border-radius: 0; box-shadow: none; }
+}
+
+/* =========================================
+   RESPONSIVIDAD DE TABLAS (Estilo Moderno)
+   ========================================= */
+
+/* 1. CONFIGURACIÓN BASE (SCROLL) */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* Activa el scroll horizontal */
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Forzamos un ancho mínimo para que no se aplaste en tabletas */
+  min-width: 800px; 
+}
+
+/* Estilo para mensajes de carga y vacío */
+.loading-spinner, .empty-message {
+  padding: 3rem;
+  text-align: center;
+  color: var(--secondary-color);
+  font-style: italic;
+  background-color: white;
+}
+
+/* =========================================
+   2. MODO MÓVIL (TARJETAS)
+   max-width: 768px se activa en celulares y tablets verticales
+   ========================================= */
+@media (max-width: 768px) {
+  
+  /* Desactivamos la estructura de tabla tradicional */
+  .data-table, 
+  .data-table tbody, 
+  .data-table tr, 
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Ocultamos los encabezados (thead) */
+  .data-table thead {
+    display: none; 
+  }
+
+  /* El wrapper ya no necesita scroll horizontal en modo tarjeta */
+  .table-wrapper {
+    overflow-x: visible; 
+  }
+  
+  /* La tabla ya no necesita ancho mínimo */
+  .data-table {
+    min-width: 0;
+  }
+
+  /* ESTILO DE LA TARJETA (FILA) */
+  .data-table tr {
+    margin-bottom: 1.5rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  /* ESTILO DE LAS CELDAS INTERNAS */
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 1rem;
+    border-bottom: 1px solid var(--bg-input);
+    position: relative;
+    padding-left: 40%; /* Espacio para la etiqueta */
+  }
+  
+  /* Aquí usamos el data-label que agregamos al HTML */
+  .data-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 1rem;
+    width: 35%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    text-align: left;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+    padding: 1.2rem;
+    justify-content: flex-end; /* Botones a la derecha */
+    background-color: var(--bg-body); /* Fondo sutilmente diferente para acciones */
+  }
+}
