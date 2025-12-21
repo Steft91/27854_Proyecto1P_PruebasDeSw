@@ -1,0 +1,47 @@
+<div class="form-container">
+  <h2>{{ clienteEditar ? 'Editar Cliente' : 'Registrar Nuevo Cliente' }}</h2>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="data-form">
+    
+    <div class="form-group">
+      <label>Cédula <span class="required">*</span></label>
+      <input formControlName="dniClient" placeholder="Ej: 1720000000">
+      <small *ngIf="form.get('dniClient')?.invalid && form.get('dniClient')?.touched" class="error-text">Requerido</small>
+    </div>
+
+    <div class="form-group">
+      <label>Nombre <span class="required">*</span></label>
+      <input formControlName="nameClient" placeholder="Nombre">
+    </div>
+
+    <div class="form-group">
+      <label>Apellido <span class="required">*</span></label>
+      <input formControlName="surnameClient" placeholder="Apellido">
+    </div>
+
+    <div class="form-group">
+      <label>Dirección <span class="required">*</span></label>
+      <input formControlName="addressClient" placeholder="Dirección domiciliaria">
+    </div>
+
+    <div class="form-group">
+      <label>Correo Electrónico</label>
+      <input type="email" formControlName="emailClient" placeholder="correo@ejemplo.com">
+      <small *ngIf="form.get('emailClient')?.hasError('email')" class="error-text">Formato inválido</small>
+    </div>
+
+    <div class="form-group">
+      <label>Teléfono</label>
+      <input formControlName="phoneClient" placeholder="0991234567">
+      <small *ngIf="form.get('phoneClient')?.hasError('pattern')" class="error-text">Solo números y guiones (7-15 dígitos)</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        {{ clienteEditar ? 'Actualizar' : 'Guardar' }}
+      </button>
+      <button *ngIf="clienteEditar" type="button" class="btn-secondary" (click)="reset()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,54 @@
+<div class="form-container">
+  <h2>{{ proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="data-form">
+    
+    <div class="form-row" style="display: flex; gap: 10px;">
+      <div class="form-group" style="flex: 1;">
+        <label>Nombre Fiscal / Razón Social <span class="required">*</span></label>
+        <input formControlName="nombreFiscal">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>RUC/NIT/NIF <span class="required">*</span></label>
+        <input formControlName="rucNitNif" placeholder="10-15 dígitos">
+        <small *ngIf="form.get('rucNitNif')?.hasError('pattern')" class="error-text">Formato inválido</small>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Dirección Física <span class="required">*</span></label>
+      <input formControlName="direccionFisica">
+    </div>
+
+    <div class="form-row" style="display: flex; gap: 10px;">
+      <div class="form-group" style="flex: 1;">
+        <label>Correo Electrónico</label>
+        <input type="email" formControlName="correoElectronico">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Teléfono</label>
+        <input formControlName="telefonoPrincipal">
+      </div>
+    </div>
+
+    <h4>Datos de Contacto (Opcional)</h4>
+    <div class="form-row" style="display: flex; gap: 10px;">
+      <div class="form-group" style="flex: 1;">
+        <label>Nombre Contacto</label>
+        <input formControlName="contactoNombre">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Puesto</label>
+        <input formControlName="contactoPuesto">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        {{ proveedorEditar ? 'Actualizar' : 'Guardar' }}
+      </button>
+      <button *ngIf="proveedorEditar" type="button" class="btn-secondary" (click)="reset()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>
