@@ -165,6 +165,8 @@ Content-Type: application/json
 ```
 
 **⚠️ GUARDA EL \_id DEL PROVEEDOR** (ej: `675d8e2a1234567890abcdef`)
+1.  694865e1d08644f615ac0606
+2.  6948661fd08644f615ac060a
 
 ### 3.2 Crear Proveedor 2
 
@@ -181,6 +183,8 @@ Content-Type: application/json
   "correoElectronico": "info@globaltech.com"
 }
 ```
+
+2.  6948661fd08644f615ac060a
 
 ### 3.3 ❌ Intentar crear proveedor como Empleado (DEBE FALLAR)
 
@@ -587,47 +591,47 @@ Marca cada punto a medida que lo pruebes:
 
 ### ✅ Autenticación
 
-- [ ] Registro de administrador funciona
-- [ ] Registro de empleado funciona
-- [ ] Registro de cliente funciona
-- [ ] Login retorna token JWT válido
-- [ ] Token incluye información del rol
+- [✅] Registro de administrador funciona
+- [✅] Registro de empleado funciona
+- [✅] Registro de cliente funciona
+- [✅] Login retorna token JWT válido
+- [✅] Token incluye información del rol
 
 ### ✅ Proveedores (Solo Admin)
 
-- [ ] Admin puede crear proveedores
-- [ ] Admin puede ver proveedores
-- [ ] Admin puede actualizar proveedores
-- [ ] Admin puede eliminar proveedores
-- [ ] Empleado NO puede crear proveedores
-- [ ] Cliente NO puede acceder a proveedores
+- [✅] Admin puede crear proveedores
+- [✅] Admin puede ver proveedores
+- [✅] Admin puede actualizar proveedores
+- [✅] Admin puede eliminar proveedores
+- [✅] Empleado NO puede crear proveedores
+- [✅] Cliente NO puede acceder a proveedores
 
 ### ✅ Productos
 
-- [ ] Todos pueden ver productos (sin auth)
-- [ ] Admin puede crear productos
-- [ ] Empleado puede crear productos
-- [ ] Cliente NO puede crear productos
-- [ ] Validación de precio > 0 funciona
-- [ ] Validación de stock >= 0 funciona
-- [ ] Validación de proveedor existente funciona
-- [ ] Relación con proveedor se puebla correctamente
-- [ ] Admin y empleado pueden actualizar productos
-- [ ] Cliente NO puede actualizar productos
-- [ ] Admin y empleado pueden eliminar productos
+- [✅] Todos pueden ver productos (sin auth)
+- [✅] Admin puede crear productos
+- [✅] Empleado puede crear productos
+- [✅] Cliente NO puede crear productos
+- [✅] Validación de precio > 0 funciona
+- [✅] Validación de stock >= 0 funciona
+- [✅] Validación de proveedor existente funciona
+- [✅] Relación con proveedor se puebla correctamente
+- [✅] Admin y empleado pueden actualizar productos
+- [✅] Cliente NO puede actualizar productos
+- [✅] Admin y empleado pueden eliminar productos
 
 ### ✅ Empleados (Solo Admin)
 
-- [ ] Admin puede crear empleados
-- [ ] Admin puede ver empleados
-- [ ] Empleado NO puede gestionar empleados
-- [ ] Cliente NO puede acceder a empleados
+- [✅] Admin puede crear empleados
+- [✅] Admin puede ver empleados
+- [✅] Empleado NO puede gestionar empleados
+- [✅] Cliente NO puede acceder a empleados
 
 ### ✅ Clientes (Admin y Empleado)
 
-- [ ] Admin puede gestionar clientes
-- [ ] Empleado puede gestionar clientes
-- [ ] Cliente NO puede gestionar clientes
+- [✅] Admin puede gestionar clientes
+- [✅] Empleado puede gestionar clientes
+- [✅] Cliente NO puede gestionar clientes
 
 ---
 
