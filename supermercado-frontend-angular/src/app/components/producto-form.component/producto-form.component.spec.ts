@@ -52,4 +52,21 @@ describe('ProductoFormComponent', () => {
     expect(priceControl.invalid).toBeTrue();
     expect(stockControl.invalid).toBeTrue(); 
   });
+
+  describe('Validación de Código de Producto (Regresión)', () => {
+    it('Debe rechazar códigos que no empiecen con PROD-', () => {
+      const control = component.form.controls['codeProduct'];
+      
+      // ANTES: 'ARROZ001' era válido.
+      // AHORA: Debe marcar error.
+      control.setValue('ARROZ001');
+      expect(control.hasError('codigoInvalido')).toBeTrue();
+    });
+
+    it('Debe aceptar el formato PROD-XXXX', () => {
+      const control = component.form.controls['codeProduct'];
+      control.setValue('PROD-5500');
+      expect(control.valid).toBeTrue();
+    });
+  });
 });

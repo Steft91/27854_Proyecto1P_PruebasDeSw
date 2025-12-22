@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor } from '../../models';
 import { Observable } from 'rxjs';
@@ -64,8 +64,13 @@ export class ProveedorFormComponent implements OnChanges {
       },
       error: (e: any) => {
         console.error(e);
-        alert('Error: ' + (e.error?.message || e.message));
+        if (e.status === 403) {
+          alert('Error: No está autorizado para esta acción (403)');
+        } else {
+          alert('Error: ' + (e.error?.message || e.message));
+        }
         this.isSubmitting = false;
+        this.reset();
       },
       complete: () => {
         this.isSubmitting = false;
@@ -87,4 +92,14 @@ export class ProveedorFormComponent implements OnChanges {
     const control = this.form.get(field);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
+}
+
+export function rucEcuatorianoValidator(control: AbstractControl): ValidationErrors | null {
+  const ruc = control.value;
+  if (!ruc) return null;
+  if (!/^\d+$/.test(ruc)) return { rucInvalido: true };
+  if (ruc.length !== 13) return { rucInvalido: true };
+  if (!ruc.endsWith('001')) return { rucInvalido: true };
+
+  return null;
 }

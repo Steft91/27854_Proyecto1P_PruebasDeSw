@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ClienteService } from '../../services/cliente.service';
 import { Cliente } from '../../models';
 import { Observable } from 'rxjs'; //
@@ -64,8 +64,14 @@ export class ClienteFormComponent implements OnChanges {
 
       error: (e: any) => {
         console.error(e);
-        alert('Error: ' + (e.error?.message || e.message));
+        if (e.status === 403) {
+          alert('Error: No está autorizado para esta acción (403)');
+        } else {
+          alert('Error: ' + (e.error?.message || e.message));
+        }
+
         this.isSubmitting = false;
+        this.reset();
       },
       complete: () => {
         this.isSubmitting = false;
@@ -83,4 +89,45 @@ export class ClienteFormComponent implements OnChanges {
     this.form.get('dniClient')?.enable();
     this.isSubmitting = false;
   }
+}
+
+export function cedulaEcuatorianaValidator(control: AbstractControl): ValidationErrors | null {
+  const cedula = control.value;
+  
+  if (!cedula) return null;
+
+  if (cedula.length !== 10 || !/^\d+$/.test(cedula)) {
+    return { cedulaInvalida: true };
+  }
+
+  const region = parseInt(cedula.substring(0, 2), 10);
+  if (region < 1 || region > 24) {
+    return { cedulaInvalida: true };
+  }
+
+  const tercerDigito = parseInt(cedula.substring(2, 3), 10);
+  if (tercerDigito >= 6) {
+    return { cedulaInvalida: true };
+  }
+
+  const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+  const verificador = parseInt(cedula.substring(9, 10), 10);
+  let suma = 0;
+
+  for (let i = 0; i < 9; i++) {
+    let valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
+    if (valor >= 10) {
+      valor -= 9;
+    }
+    suma += valor;
+  }
+
+  const residuo = suma % 10;
+  const resultado = residuo === 0 ? 0 : 10 - residuo;
+
+  if (resultado !== verificador) {
+    return { cedulaInvalida: true };
+  }
+
+  return null;
 }

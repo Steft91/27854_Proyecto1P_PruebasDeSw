@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { EmpleadoService } from '../../services/empleado.service';
 import { Empleado } from '../../models';
 import { Observable } from 'rxjs';
@@ -124,8 +124,13 @@ export class EmpleadoFormComponent implements OnChanges {
       },
       error: (e: any) => {
         console.error(e);
-        alert('Error: ' + (e.error?.message || e.message));
+        if (e.status === 403) {
+          alert('Error: No está autorizado para esta acción (403)');
+        } else {
+          alert('Error: ' + (e.error?.message || e.message));
+        }
         this.isSubmitting = false;
+        this.reset();
       },
       complete: () => {
         this.isSubmitting = false;
@@ -153,4 +158,14 @@ export class EmpleadoFormComponent implements OnChanges {
     const control = this.form.get(field);
     return !!(control && control.hasError(errorType) && (control.dirty || control.touched));
   }
+}
+
+export function sueldoMinimoValidator(control: AbstractControl): ValidationErrors | null {
+  const sueldo = control.value;
+  if (sueldo === null || sueldo === undefined) return null;
+
+  if (sueldo < 460) {
+    return { sueldoIlegal: true };
+  }
+  return null;
 }

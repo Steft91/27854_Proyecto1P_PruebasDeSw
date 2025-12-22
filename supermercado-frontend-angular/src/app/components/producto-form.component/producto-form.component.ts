@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor, Producto } from '../../models';
@@ -85,8 +85,13 @@ export class ProductoFormComponent implements OnInit, OnChanges {
       },
       error: (e: any) => {
         console.error(e);
-        alert('Error: ' + (e.error?.message || e.message));
+        if (e.status === 403) {
+          alert('Error: No está autorizado para esta acción (403)');
+        } else {
+          alert('Error: ' + (e.error?.message || e.message));
+        }
         this.isSubmitting = false;
+        this.reset();
       },
       complete: () => {
         this.isSubmitting = false;
@@ -109,4 +114,17 @@ export class ProductoFormComponent implements OnInit, OnChanges {
     const control = this.form.get(field);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
+}
+
+export function codigoProductoValidator(control: AbstractControl): ValidationErrors | null {
+  const codigo = control.value;
+  if (!codigo) return null;
+
+  // Regex: Empieza con PROD- seguido de uno o más números
+  const pattern = /^PROD-\d+$/;
+  
+  if (!pattern.test(codigo)) {
+    return { codigoInvalido: true };
+  }
+  return null;
 }

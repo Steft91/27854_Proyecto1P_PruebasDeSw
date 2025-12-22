@@ -52,6 +52,7 @@ it('Debe actualizar el valor del formulario cuando se escribe en el input HTML',
 
   it('Debe llamar al servicio.crear cuando se hace submit con datos válidos', () => {
     component.form.setValue({
+      //dniClient: '1752854438',
       dniClient: '1720000001',
       nameClient: 'Carlos',
       surnameClient: 'Vives',
@@ -85,5 +86,40 @@ it('Debe actualizar el valor del formulario cuando se escribe en el input HTML',
 
     const dniInput = component.form.controls['dniClient'];
     expect(dniInput.disabled).toBeTrue();
+  });
+
+  describe('Validación de Cédula (Regresión)', () => {
+    
+    it('Debe rechazar una cédula que parece real (10 dígitos) pero es matemáticamente falsa', () => {
+      const control = component.form.controls['dniClient'];
+      
+      // CASO DE REGRESIÓN:
+      // Esta cédula tiene 10 dígitos y solo números.
+      // ANTES: Pasaba (porque solo validábamos 'required' o regex simple).
+      // AHORA: Debe fallar porque el último dígito no cumple el Módulo 10.
+      control.setValue('1710034068'); // (El dígito verificador real debería ser 5)
+
+      expect(control.hasError('cedulaInvalida')).toBeTrue();
+      expect(control.invalid).toBeTrue();
+    });
+
+    it('Debe aceptar una cédula ecuatoriana matemáticamente correcta', () => {
+      const control = component.form.controls['dniClient'];
+      
+      // Cédula Válida Real
+      control.setValue('1710034065');
+      
+      expect(control.valid).toBeTrue();
+      expect(control.hasError('cedulaInvalida')).toBeFalse();
+    });
+
+    it('Debe rechazar cédulas de provincias inexistentes (ej. 99)', () => {
+      const control = component.form.controls['dniClient'];
+      
+      // Empieza con 99 (Ecuador solo tiene hasta la 24 + 30)
+      control.setValue('9912345678'); 
+      
+      expect(control.hasError('cedulaInvalida')).toBeTrue();
+    });
   });
 });

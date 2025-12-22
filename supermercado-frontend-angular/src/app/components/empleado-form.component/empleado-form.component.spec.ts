@@ -35,4 +35,21 @@ describe('EmpleadoFormComponent', () => {
     cedula.setValue('1712345678'); 
     expect(cedula.valid).toBeTrue();
   });
+
+  describe('Validación de Sueldo Mínimo (Regresión)', () => {
+    it('Debe marcar error si el sueldo es menor al básico ($460)', () => {
+      const control = component.form.controls['sueldoEmpleado'];
+      
+      // ANTES: 200 era válido (porque era > 1).
+      // AHORA: Debe fallar.
+      control.setValue(459);
+      expect(control.hasError('sueldoIlegal')).toBeTrue();
+    });
+
+    it('Debe aceptar sueldos iguales o superiores al básico', () => {
+      const control = component.form.controls['sueldoEmpleado'];
+      control.setValue(460);
+      expect(control.valid).toBeTrue();
+    });
+  });
 });

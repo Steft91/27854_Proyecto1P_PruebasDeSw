@@ -65,4 +65,20 @@ describe('ProveedorFormComponent', () => {
 
     expect(mockService.actualizar).toHaveBeenCalledWith('555', jasmine.any(Object));
   });
+
+  describe('Validación de RUC (Regresión)', () => {
+    it('Debe rechazar un RUC que no termine en 001', () => {
+      const control = component.form.controls['rucNitNif'];
+      // INTENTO FALLIDO (Antes pasaba, ahora debe fallar)
+      control.setValue('1710034065002'); 
+      expect(control.hasError('rucInvalido')).toBeTrue();
+    });
+
+    it('Debe aceptar un RUC válido de 13 dígitos terminado en 001', () => {
+      const control = component.form.controls['rucNitNif'];
+      // INTENTO EXITOSO
+      control.setValue('1710034065001');
+      expect(control.valid).toBeTrue();
+    });
+  });
 });
