@@ -2,7 +2,7 @@ const Cliente = require('../models/Cliente');
 
 // Funciones de validacion
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isValidPhone = (phone) => /^[0-9\-+]{7,15}$/.test(phone);
+const isValidEcuadorianCelular = (celular) => /^09\d{8}$/.test(celular);
 const isStringAndNotEmpty = (value) =>
   typeof value === 'string' && value.trim().length > 0;
 
@@ -131,16 +131,16 @@ async function createNewClient(req, res) {
       });
     }
 
-    // Validaciones de formato para email y telefono
+    // Validaciones de formato para email y celular
     if (emailClient && !isValidEmail(emailClient)) {
       return res
         .status(400)
         .json({ message: 'El formato del email no es válido' });
     }
-    if (phoneClient && !isValidPhone(phoneClient)) {
+    if (phoneClient && !isValidEcuadorianCelular(phoneClient)) {
       return res
         .status(400)
-        .json({ message: 'El formato del teléfono no es válido' });
+        .json({ message: 'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos' });
     }
 
     //Comprobar si el cliente ya existe
@@ -209,11 +209,11 @@ async function updateExistingClient(req, res) {
     if (
       newPhoneClient !== undefined &&
       newPhoneClient !== '' &&
-      !isValidPhone(newPhoneClient)
+      !isValidEcuadorianCelular(newPhoneClient)
     ) {
       return res
         .status(400)
-        .json({ message: 'El nuevo teléfono no tiene un formato válido' });
+        .json({ message: 'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos' });
     }
 
     // Validar que si se mandan nombre o apellido, no sean cadenas vacias

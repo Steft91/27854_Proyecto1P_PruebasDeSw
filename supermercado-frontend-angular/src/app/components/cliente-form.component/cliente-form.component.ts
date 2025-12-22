@@ -27,7 +27,7 @@ export class ClienteFormComponent implements OnChanges {
       surnameClient: ['', Validators.required],
       addressClient: ['', Validators.required],
       emailClient: ['', [Validators.email]],
-      phoneClient: ['', [Validators.pattern(/^[0-9\-+]{7,15}$/)]]
+      phoneClient: ['', [Validators.pattern(/^09\d{8}$/)]]
     });
   }
 

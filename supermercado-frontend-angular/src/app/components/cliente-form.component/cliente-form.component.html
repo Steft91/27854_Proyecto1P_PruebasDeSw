@@ -31,8 +31,8 @@
 
     <div class="form-group">
       <label>Teléfono</label>
-      <input formControlName="phoneClient" placeholder="0991234567">
-      <small *ngIf="form.get('phoneClient')?.hasError('pattern')" class="error-text">Solo números y guiones (7-15 dígitos)</small>
+      <input formControlName="phoneClient" placeholder="09XXXXXXXX">
+      <small *ngIf="form.get('phoneClient')?.hasError('pattern')" class="error-text">Debe empezar con 09 y tener 10 dígitos</small>
     </div>
 
     <div class="form-actions">

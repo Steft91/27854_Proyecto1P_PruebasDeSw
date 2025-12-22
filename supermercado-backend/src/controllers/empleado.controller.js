@@ -1,6 +1,19 @@
 const Empleado = require('../models/Empleado');
 
 /**
+ * Valida número de celular ecuatoriano
+ * @param {string} celular - Número de celular de 10 dígitos que debe empezar con 09
+ * @returns {boolean} - true si es válido, false si no
+ */
+const isValidEcuadorianCelular = (celular) => {
+  // Verificar que tenga 10 dígitos y empiece con 09
+  if (!/^09\d{8}$/.test(celular)) {
+    return false;
+  }
+  return true;
+};
+
+/**
  * Valida cédula ecuatoriana con algoritmo de dígito verificador
  * @param {string} cedula - Cédula de 10 dígitos
  * @returns {boolean} - true si es válida, false si no
@@ -111,6 +124,13 @@ async function createNewEmpleado(req, res) {
       });
     }
 
+    // Validación de celular ecuatoriano (debe empezar con 09 y tener 10 dígitos)
+    if (!isValidEcuadorianCelular(celularEmpleado)) {
+      return res.status(400).json({
+        message: 'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      });
+    }
+
     // Comprobar si el empleado ya existe
     const existingEmpleado = await Empleado.findOne({ cedulaEmpleado });
     if (existingEmpleado) {
@@ -169,6 +189,13 @@ async function updateExistingEmpleado(req, res) {
     // Validación del nuevo sueldo si se proporciona
     if (newSueldoEmpleado !== undefined && newSueldoEmpleado <= 0) {
       return res.status(400).json({ message: 'El sueldo debe ser mayor a 0' });
+    }
+
+    // Validación del nuevo celular si se proporciona
+    if (newCelularEmpleado !== undefined && !isValidEcuadorianCelular(newCelularEmpleado)) {
+      return res.status(400).json({
+        message: 'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      });
     }
 
     const updateData = {};

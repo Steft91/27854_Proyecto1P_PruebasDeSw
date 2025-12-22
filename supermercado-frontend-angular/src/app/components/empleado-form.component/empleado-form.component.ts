@@ -42,7 +42,11 @@ import { Observable } from 'rxjs';
           <div class="form-group" style="flex:1;">
             <label>Celular <span class="required">*</span></label>
             <input formControlName="celularEmpleado" 
+                  placeholder="09XXXXXXXX"
                   [class.invalid]="isFieldInvalid('celularEmpleado')">
+            <small *ngIf="isFieldInvalid('celularEmpleado')" class="error-text">
+              Debe empezar con 09 y tener 10 dígitos.
+            </small>
           </div>
           <div class="form-group" style="flex:1;">
             <label>Correo Electrónico</label>
@@ -91,7 +95,7 @@ export class EmpleadoFormComponent implements OnChanges {
       cedulaEmpleado: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       nombreEmpleado: ['', Validators.required],
       emailEmpleado: ['', [Validators.email]],
-      celularEmpleado: ['', Validators.required],
+      celularEmpleado: ['', [Validators.required, Validators.pattern(/^09\d{8}$/)]],
       direccionEmpleado: [''],
       //sueldoEmpleado: [460, [Validators.required, sueldoMinimoValidator]]
       sueldoEmpleado: [460, [Validators.required, Validators.min(1)]]
