@@ -22,6 +22,7 @@ export class EmpleadoService {
       newNombreEmpleado: empleado.nombreEmpleado,
       newEmailEmpleado: empleado.emailEmpleado,
       newCelularEmpleado: empleado.celularEmpleado,
+      newDireccionEmpleado: empleado.direccionEmpleado,
       newSueldoEmpleado: Number(empleado.sueldoEmpleado)
     };
     return this.http.put(`${this.apiUrl}/${cedula}`, payload);

@@ -23,6 +23,11 @@ const empleadoSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    direccionEmpleado: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     sueldoEmpleado: {
       type: Number,
       required: true,

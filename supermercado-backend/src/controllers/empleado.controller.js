@@ -87,6 +87,7 @@ async function createNewEmpleado(req, res) {
       nombreEmpleado,
       emailEmpleado,
       celularEmpleado,
+      direccionEmpleado,
       sueldoEmpleado,
     } = req.body;
 
@@ -129,6 +130,7 @@ async function createNewEmpleado(req, res) {
       nombreEmpleado,
       emailEmpleado: emailEmpleado || '',
       celularEmpleado,
+      direccionEmpleado: direccionEmpleado || '',
       sueldoEmpleado,
     });
 
@@ -152,6 +154,7 @@ async function updateExistingEmpleado(req, res) {
       newNombreEmpleado,
       newEmailEmpleado,
       newCelularEmpleado,
+      newDireccionEmpleado,
       newSueldoEmpleado,
     } = req.body;
 
@@ -175,6 +178,8 @@ async function updateExistingEmpleado(req, res) {
       updateData.emailEmpleado = newEmailEmpleado;
     if (newCelularEmpleado !== undefined)
       updateData.celularEmpleado = newCelularEmpleado;
+    if (newDireccionEmpleado !== undefined)
+      updateData.direccionEmpleado = newDireccionEmpleado;
     if (newSueldoEmpleado !== undefined)
       updateData.sueldoEmpleado = newSueldoEmpleado;
 

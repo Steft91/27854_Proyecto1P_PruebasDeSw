@@ -44,5 +44,6 @@ export interface Empleado {
   nombreEmpleado: string;
   emailEmpleado?: string;
   celularEmpleado: string;
+  direccionEmpleado?: string;
   sueldoEmpleado: number;
 }

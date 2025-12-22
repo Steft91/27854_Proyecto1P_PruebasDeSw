@@ -14,6 +14,7 @@
             <th>Cédula</th>
             <th>Nombre</th>
             <th>Contacto</th>
+            <th>Dirección</th>
             <th>Sueldo</th>
             <th>Acciones</th>
         </tr>
@@ -29,6 +30,10 @@
             <small style="color: var(--text-muted); font-size: 0.85em;">
                 {{ emp.emailEmpleado || 'Sin email' }}
             </small>
+            </td>
+
+            <td data-label="Dirección">
+              {{ emp.direccionEmpleado || 'No especificada' }}
             </td>
 
             <td data-label="Sueldo">${{ emp.sueldoEmpleado }}</td>

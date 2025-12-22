@@ -54,6 +54,12 @@ import { Observable } from 'rxjs';
           </div>
         </div>
 
+        <div class="form-group">
+          <label>Dirección</label>
+          <input formControlName="direccionEmpleado" 
+                placeholder="Dirección del empleado">
+        </div>
+
         <div class="form-actions">
           <button type="submit" class="btn-primary" [disabled]="isSubmitting">
             {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
@@ -86,6 +92,7 @@ export class EmpleadoFormComponent implements OnChanges {
       nombreEmpleado: ['', Validators.required],
       emailEmpleado: ['', [Validators.email]],
       celularEmpleado: ['', Validators.required],
+      direccionEmpleado: [''],
       //sueldoEmpleado: [460, [Validators.required, sueldoMinimoValidator]]
       sueldoEmpleado: [460, [Validators.required, Validators.min(1)]]
     });
