@@ -2,11 +2,12 @@ import { Component, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor } from '../../models';
+import { ConfirmModalComponent } from '../confirm-modal.component/confirm-modal.component';
 
 @Component({
   selector: 'app-proveedor-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModalComponent],
   templateUrl: './proveedor-list.component.html'
 })
 export class ProveedorListComponent implements OnInit {
@@ -14,6 +15,8 @@ export class ProveedorListComponent implements OnInit {
 
   proveedores = signal<Proveedor[]>([]);
   loading = signal<boolean>(false);
+  showDeleteModal = false;
+  proveedorToDelete: { id: string; nombre: string } | null = null;
 
   constructor(private service: ProveedorService) {}
 
@@ -41,16 +44,30 @@ export class ProveedorListComponent implements OnInit {
     });
   }
 
-  onEliminar(id: string | undefined) {
+  onEliminar(id: string | undefined, nombre: string) {
     if (!id) return;
-    if (!confirm('¿Eliminar este proveedor?')) return;
+    this.proveedorToDelete = { id, nombre };
+    this.showDeleteModal = true;
+  }
 
-    this.service.eliminar(id).subscribe({
+  confirmDelete() {
+    if (!this.proveedorToDelete) return;
+
+    this.service.eliminar(this.proveedorToDelete.id).subscribe({
       next: () => {
         alert('Proveedor eliminado');
         this.cargar();
+        this.closeModal();
       },
-      error: (e) => alert('Error: ' + (e.error?.message || e.message))
+      error: (e) => {
+        alert('Error: ' + (e.error?.message || e.message));
+        this.closeModal();
+      }
     });
+  }
+
+  closeModal() {
+    this.showDeleteModal = false;
+    this.proveedorToDelete = null;
   }
 }

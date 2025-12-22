@@ -2,11 +2,12 @@ import { Component, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../models';
+import { ConfirmModalComponent } from '../confirm-modal.component/confirm-modal.component';
 
 @Component({
   selector: 'app-productos-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModalComponent],
   templateUrl: './productos-list.component.html'
 })
 export class ProductosListComponent implements OnInit {
@@ -15,6 +16,8 @@ export class ProductosListComponent implements OnInit {
   // Estado reactivo con Signals
   productos = signal<Producto[]>([]);
   loading = signal<boolean>(false);
+  showDeleteModal = false;
+  productoToDelete: { code: string; nombre: string } | null = null;
 
   constructor(private service: ProductoService) {}
 
@@ -44,15 +47,29 @@ export class ProductosListComponent implements OnInit {
     });
   }
 
-  onEliminar(code: string) {
-    if (!confirm('¿Eliminar producto?')) return;
+  onEliminar(code: string, nombre: string) {
+    this.productoToDelete = { code, nombre };
+    this.showDeleteModal = true;
+  }
 
-    this.service.eliminar(code).subscribe({
+  confirmDelete() {
+    if (!this.productoToDelete) return;
+
+    this.service.eliminar(this.productoToDelete.code).subscribe({
       next: () => {
         alert('Producto eliminado correctamente');
-        this.cargar(); // Recargamos la lista
+        this.cargar();
+        this.closeModal();
       },
-      error: (e) => alert('Error al eliminar: ' + (e.error?.message || e.message))
+      error: (e) => {
+        alert('Error al eliminar: ' + (e.error?.message || e.message));
+        this.closeModal();
+      }
     });
+  }
+
+  closeModal() {
+    this.showDeleteModal = false;
+    this.productoToDelete = null;
   }
 }

@@ -2,17 +2,20 @@ import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular
 import { CommonModule } from '@angular/common';
 import { ClienteService } from '../../services/cliente.service';
 import { Cliente } from '../../models';
+import { ConfirmModalComponent } from '../confirm-modal.component/confirm-modal.component';
 
 @Component({
   selector: 'app-clientes-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModalComponent],
   templateUrl: './clientes-list.component.html',
 })
 export class ClientesListComponent implements OnInit {
   @Output() editar = new EventEmitter<Cliente>();
   clientes = signal<Cliente[]>([]); 
   loading = signal<boolean>(false);
+  showDeleteModal = false;
+  clienteToDelete: { dni: string; nombre: string } | null = null;
 
   constructor(private clienteService: ClienteService) {}
 
@@ -35,15 +38,29 @@ export class ClientesListComponent implements OnInit {
     });
   }
 
-  onEliminar(dni: string) {
-    if (!confirm('¿Estás seguro de eliminar este cliente?')) return;
+  onEliminar(dni: string, nombre: string) {
+    this.clienteToDelete = { dni, nombre };
+    this.showDeleteModal = true;
+  }
 
-    this.clienteService.eliminar(dni).subscribe({
+  confirmDelete() {
+    if (!this.clienteToDelete) return;
+
+    this.clienteService.eliminar(this.clienteToDelete.dni).subscribe({
       next: () => {
         alert('Cliente eliminado correctamente');
-        this.cargarClientes(); 
+        this.cargarClientes();
+        this.closeModal();
       },
-      error: (e) => alert('Error al eliminar: ' + (e.error?.message || e.message))
+      error: (e) => {
+        alert('Error al eliminar: ' + (e.error?.message || e.message));
+        this.closeModal();
+      }
     });
+  }
+
+  closeModal() {
+    this.showDeleteModal = false;
+    this.clienteToDelete = null;
   }
 }
