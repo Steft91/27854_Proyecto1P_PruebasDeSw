@@ -22,6 +22,7 @@ export class ProveedorFormComponent implements OnChanges {
   constructor(private fb: FormBuilder, private service: ProveedorService) {
     this.form = this.fb.group({
       nombreFiscal: ['', Validators.required],
+      //rucNitNif: ['', [Validators.required, rucEcuatorianoValidator]],
       rucNitNif: ['', [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
       direccionFisica: ['', Validators.required],
       telefonoPrincipal: ['', Validators.pattern(/^[\d\s\-+()]{7,20}$/)],

@@ -21,6 +21,7 @@ export class ClienteFormComponent implements OnChanges {
 
   constructor(private fb: FormBuilder, private clienteService: ClienteService) {
     this.form = this.fb.group({
+      //dniClient: ['', [Validators.required, cedulaEcuatorianaValidator]],
       dniClient: ['', Validators.required],
       nameClient: ['', Validators.required],
       surnameClient: ['', Validators.required],

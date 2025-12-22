@@ -31,6 +31,7 @@ export class ProductoFormComponent implements OnInit, OnChanges {
     private proveedorService: ProveedorService
   ) {
     this.form = this.fb.group({
+      //codeProduct: ['', [Validators.required, codigoProductoValidator]], 
       codeProduct: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9\-]+$/)]], 
       nameProduct: ['', Validators.required],
       descriptionProduct: ['', Validators.required],

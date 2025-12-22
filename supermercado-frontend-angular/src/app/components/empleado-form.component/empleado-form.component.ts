@@ -86,6 +86,7 @@ export class EmpleadoFormComponent implements OnChanges {
       nombreEmpleado: ['', Validators.required],
       emailEmpleado: ['', [Validators.email]],
       celularEmpleado: ['', Validators.required],
+      //sueldoEmpleado: [460, [Validators.required, sueldoMinimoValidator]]
       sueldoEmpleado: [460, [Validators.required, Validators.min(1)]]
     });
   }
