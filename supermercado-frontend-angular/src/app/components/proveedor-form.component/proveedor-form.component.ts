@@ -86,6 +86,7 @@ export class ProveedorFormComponent implements OnChanges {
 
   private resetFormState() {
     this.form.reset();
+    this.form.get('rucNitNif')?.enable();
     this.isSubmitting = false;
   }
 

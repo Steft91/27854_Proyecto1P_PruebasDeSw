@@ -45,12 +45,24 @@ describe('ClientesListComponent', () => {
     expect(rows[1].nativeElement.textContent).toContain('Luis');
   });
 
-  it('should call delete service on confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('debe abrir el modal de confirmación y preparar los datos al llamar onEliminar', () => {
+    const dni = '101';
+    const nombre = 'Ana';
 
-    component.onEliminar('101');
+    component.onEliminar(dni, nombre);
+
+    expect(component.showDeleteModal).toBeTrue();
+    expect(component.clienteToDelete).toEqual({ dni, nombre });
+    expect(clienteServiceMock.eliminar).not.toHaveBeenCalled();
+  });
+
+  it('debe llamar al servicio eliminar y cerrar el modal al confirmar', () => {
+    component.clienteToDelete = { dni: '101', nombre: 'Ana' };
+    clienteServiceMock.eliminar.and.returnValue(of({})); 
+    component.confirmDelete();
+
     expect(clienteServiceMock.eliminar).toHaveBeenCalledWith('101');
-
-    expect(clienteServiceMock.obtenerTodos).toHaveBeenCalledTimes(2);
+    expect(component.showDeleteModal).toBeFalse();
+    expect(clienteServiceMock.obtenerTodos).toHaveBeenCalled();
   });
 });
