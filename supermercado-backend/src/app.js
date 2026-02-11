@@ -38,7 +38,7 @@ app.use((req, res) => {
 });
 
 // Middleware de manejo de errores global
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Error capturado:', err);
   res.status(err.status || 500).json({
     msg: err.message || 'Error del servidor',

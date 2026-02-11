@@ -7,6 +7,14 @@ const commonRules = {
   quotes: ['error', 'single'],
   eqeqeq: 'error',
   camelcase: 'error',
+  'no-unused-vars': [
+    'error',
+    {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_',
+      caughtErrorsIgnorePattern: '^_',
+    },
+  ],
 };
 
 module.exports = [
@@ -29,6 +37,7 @@ module.exports = [
     languageOptions: {
       globals: {
         ...globals.jest,
+        ...globals.node,
       },
     },
     rules: commonRules,

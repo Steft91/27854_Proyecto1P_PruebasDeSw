@@ -7,8 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-  "coverage": "ng test --code-coverage --no-watch",
-  "http": "http-server ./coverage/supermercado-frontend-angular -o"
+    "coverage": "ng test --code-coverage --no-watch --browsers=ChromeHeadless",
+    "http": "http-server ./coverage/supermercado-frontend-angular -o"
   },
   "prettier": {
     "printWidth": 100,

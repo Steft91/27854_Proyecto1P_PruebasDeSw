@@ -29,7 +29,7 @@ function checkRole(roles) {
       if (!roles.includes(usuario.rol)) {
         return res.status(403).json({
           msg: `Acceso denegado. Se requiere uno de los siguientes roles: ${roles.join(
-            ', '
+            ', ',
           )}`,
         });
       }
@@ -37,7 +37,7 @@ function checkRole(roles) {
       // Almacenar el usuario en la petición
       req.user = usuario;
       next();
-    } catch (error) {
+    } catch (_error) {
       return res.status(403).json({ msg: 'Token inválido o expirado' });
     }
   };

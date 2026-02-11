@@ -52,7 +52,6 @@ afterAll(() => {
 
 // Valid Ecuadorian cedulas
 const CEDULA_1 = '1713175071';
-const CEDULA_2 = '0926694135';
 const CEDULA_3 = '0601234560'; // verifier = 0 (sum%10===0 branch)
 
 const mockClient = {
