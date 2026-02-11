@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Proveedor } from '../models';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class ProveedorService {
-  private apiUrl = 'http://localhost:3000/api/providers';
+  private apiUrl = `${environment.apiUrl}/providers`;
 
   constructor(private http: HttpClient) {}
 
@@ -25,7 +26,7 @@ export class ProveedorService {
       newTelefonoPrincipal: proveedor.telefonoPrincipal,
       newCorreoElectronico: proveedor.correoElectronico,
       newContactoNombre: proveedor.contactoNombre,
-      newContactoPuesto: proveedor.contactoPuesto
+      newContactoPuesto: proveedor.contactoPuesto,
     };
     return this.http.put(`${this.apiUrl}/${id}`, payload);
   }

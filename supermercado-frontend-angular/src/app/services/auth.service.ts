@@ -3,27 +3,33 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AuthResponse } from '../models';
 import { DOCUMENT } from '@angular/common';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(
     private http: HttpClient,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
   ) {}
 
   login(credentials: { username: string; password: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(response => {
+      tap((response) => {
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
-      })
+      }),
     );
   }
 
-  register(userData: { username: string; email: string; password: string; role?: string }): Observable<any> {
+  register(userData: {
+    username: string;
+    email: string;
+    password: string;
+    role?: string;
+  }): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
 

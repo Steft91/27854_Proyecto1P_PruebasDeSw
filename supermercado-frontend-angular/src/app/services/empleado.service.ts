@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Empleado } from '../models';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class EmpleadoService {
-  private apiUrl = 'http://localhost:3000/api/empleados';
+  private apiUrl = `${environment.apiUrl}/empleados`;
 
   constructor(private http: HttpClient) {}
 
@@ -23,7 +24,7 @@ export class EmpleadoService {
       newEmailEmpleado: empleado.emailEmpleado,
       newCelularEmpleado: empleado.celularEmpleado,
       newDireccionEmpleado: empleado.direccionEmpleado,
-      newSueldoEmpleado: Number(empleado.sueldoEmpleado)
+      newSueldoEmpleado: Number(empleado.sueldoEmpleado),
     };
     return this.http.put(`${this.apiUrl}/${cedula}`, payload);
   }

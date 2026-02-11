@@ -1,0 +1,116 @@
+name: CI Workflow - Backend & Frontend
+#1. Triggers: Eventos que inician el workflow
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+#2. Jobs: Conjunto de trabajos que se ejecutan en el workflow
+jobs:
+  # Job para el Backend
+  backend:
+    name: Backend - Tests, Coverage & Lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./supermercado-backend
+
+    steps:
+      #1. Checkout: Clona el repositorio
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      #2. Setup Node.js: Configura el entorno de Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./supermercado-backend/package-lock.json
+
+      #3. Install dependencies: Instala las dependencias del backend
+      - name: Instalar dependencias del backend
+        run: npm ci
+
+      #4. Lint code: Ejecuta el linter para verificar la calidad del código
+      - name: ESLint - Verificar calidad del código
+        run: npm run lint
+
+      #5. Ejecutar tests: Ejecuta los tests del backend
+      - name: Ejecutar tests del backend
+        run: npm test
+
+      #6. Ejecutar tests de cobertura: Ejecuta los tests con cobertura de código
+      - name: Ejecutar tests con cobertura del backend
+        run: npm run coverage
+
+      #7. Subir reporte de cobertura del backend
+      - name: Subir reporte de cobertura del backend
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage-report
+          path: ./supermercado-backend/coverage/
+          retention-days: 30
+
+  # Job para el Frontend Angular
+  frontend:
+    name: Frontend Angular - Tests & Coverage
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./supermercado-frontend-angular
+
+    steps:
+      #1. Checkout: Clona el repositorio
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      #2. Setup Node.js: Configura el entorno de Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./supermercado-frontend-angular/package-lock.json
+
+      #3. Install dependencies: Instala las dependencias del frontend
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      #4. Ejecutar tests con cobertura: Ejecuta los tests del frontend con cobertura
+      - name: Ejecutar tests con cobertura del frontend
+        run: npm run coverage
+
+      #5. Subir reporte de cobertura del frontend
+      - name: Subir reporte de cobertura del frontend
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage-report
+          path: ./supermercado-frontend-angular/coverage/
+          retention-days: 30
+
+  # Job de resumen final
+  summary:
+    name: Resumen de CI
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: always()
+
+    steps:
+      - name: Verificar estado de los jobs
+        run: |
+          echo "✅ CI Pipeline completado"
+          echo "Backend status: ${{ needs.backend.result }}"
+          echo "Frontend status: ${{ needs.frontend.result }}"
+
+          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ]; then
+            echo "❌ Algunos jobs fallaron"
+            exit 1
+          fi
+
+          echo "✅ Todos los tests pasaron correctamente"
