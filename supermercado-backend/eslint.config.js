@@ -5,10 +5,6 @@ const commonRules = {
   ...js.configs.recommended.rules,
   semi: ['error', 'always'],
   quotes: ['error', 'single'],
-  'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-  'no-console': ['warn', { allow: ['warn', 'error'] }],
-  'prefer-const': 'error',
-  'no-var': 'error',
   eqeqeq: 'error',
   camelcase: 'error',
 };

@@ -1,274 +1,583 @@
-const request = require('supertest');
-const app = require('../src/app');
-
-const mockClient = {
-    dniClient: '12345678Z',
-    nameClient: 'Marcos',
-    surnameClient: 'Escobar',
-    addressClient: 'Avenida Siempre Viva 742',
-    emailClient: 'marcos@test.com',
-    phoneClient: '555-0101'
-};
-
-const mockClient2 = {
-    dniClient: '87654321G',
-    nameClient: 'Stefany',
-    surnameClient: 'Díaz',
-    addressClient: 'Calle Falsa 123',
-    emailClient: 'stefy@test.com'
-};
-
-describe('Client API', () => {
-    describe('GET /api/clients', () => {
-        test('should return an empty list initially', async () => {
-            const response = await request(app).get('/api/clients');
-            expect(response.statusCode).toBe(200);
-            expect(response.body).toEqual([]);
-        });
-
-        test('should find a client if client exist', async () => {
-            await request(app).post('/api/clients').send(mockClient);
-
-            const response = await request(app).get(`/api/clients/${mockClient.dniClient}`);
-
-            expect(response.statusCode).toBe(200);
-            expect(response.body.nameClient).toBe(mockClient.nameClient);
-        });
-
-        test('should throw 404 if client DNI does not exist', async () => {
-            const response = await request(app).get('/api/clients/DNI-FALSO-123');
-
-            expect(response.statusCode).toBe(404);
-            expect(response.body.message).toBe('Cliente no encontrado');
-        });
-    });
-
-    describe('POST /api/clients', () => {
-        //Prueba POST crear nuevo cliente correctamente
-        test('should create a new client succesfully', async () => {
-            const response = await request(app).post('/api/clients').send(mockClient2);
-            expect(response.statusCode).toBe(201);
-            expect(response.body.client).toBeDefined();
-            expect(response.body.client).toHaveProperty('dniClient');
-            expect(response.body.client.nameClient).toBe('Stefany');
-        });
-    
-        //Prueba POST crear cliente sin todos los parametros
-        test('should fail cause data is missing', async () => {
-            const clientIncompleto = {
-                nameClient: 'Incompleto'
-                // Faltan dniClient, surnameClient, addressClient
-            };
-    
-            const response = await request(app)
-                .post('/api/clients')
-                .send(clientIncompleto);
-            
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toMatch(/Campos obligatorios faltantes/);
-        });
-    
-        //Prueba POST intentar crear un cliente con el mismo DNI
-        test('should fail cause DNI already exist', async () => {
-            // Intentamos crearlo, si falla es que ya existe, si no, se crea.
-            await request(app).post('/api/clients').send(mockClient).catch(e => {}); 
-
-            //Intentar crear un cliente con el mismo DNI
-            const response = await request(app).post('/api/clients').send({ ...mockClient2, dniClient: '12345678Z' });
-            
-            expect(response.statusCode).toBe(409);
-            expect(response.body.message).toBe('Ya existe un cliente con ese DNI');
-        });
-
-        test('should fail if email format is invalid', async () => {
-            const invalidEmailClient = { 
-                ...mockClient, 
-                dniClient: 'EMAIL-FAIL-1', 
-                emailClient: 'esto-no-es-un-email' 
-            };
-
-            const response = await request(app).post('/api/clients').send(invalidEmailClient);
-            
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('El formato del email no es válido');
-        });
-
-        test('should fail if phone format is invalid', async () => {
-            const invalidPhoneClient = { 
-                ...mockClient, 
-                dniClient: 'PHONE-FAIL-1', 
-                phoneClient: 'solo-letras-aqui' 
-            };
-
-            const response = await request(app).post('/api/clients').send(invalidPhoneClient);
-            
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('El formato del teléfono no es válido');
-        });
-
-        test('should fail if required fields contain only whitespace', async () => {
-            const emptySpaceClient = {
-                dniClient: 'SPACE-TEST',
-                nameClient: '   ', // Solo espacios
-                surnameClient: 'Valid',
-                addressClient: 'Valid'
-            };
-
-            const response = await request(app).post('/api/clients').send(emptySpaceClient);
-
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toContain('deben ser texto válido y no estar vacíos');
-        });
-
-        test('should trim whitespace from input fields automatically', async () => {
-            const messyClient = {
-                dniClient: '  TRIM-TEST  ',
-                nameClient: '  Juan  ',
-                surnameClient: '  Perez  ',
-                addressClient: ' Calle 1 ',
-                emailClient: ' juan@test.com '
-            };
-
-            const response = await request(app).post('/api/clients').send(messyClient);
-
-            expect(response.statusCode).toBe(201);
-            expect(response.body.client.dniClient).toBe('TRIM-TEST'); // Sin espacios
-            expect(response.body.client.nameClient).toBe('Juan');       // Sin espacios
-            expect(response.body.client.emailClient).toBe('juan@test.com');
-        });
-    });
-
-    describe('PUT /api/clients/:dni', () => {
-        //Prueba PUT para actualizar un cliente correctamente
-        test('PUT /api/clients should update a specific client info', async () => {
-            const clienteNuevo = {
-                dniClient: '98765432A',
-                nameClient: 'Ana',
-                surnameClient: 'Prueba',
-                addressClient: 'Calle Falsa 123'
-            };
-    
-            const postRes = await request(app).post('/api/clients').send(clienteNuevo);
-            const dni = postRes.body.client.dniClient;
-    
-            const datosActualizados = {
-                newNameClient: 'Ana Actualizada',
-                newPhoneClient: '555-1234'
-            };
-    
-            const response = await request(app).put(`/api/clients/${dni}`).send(datosActualizados);
-    
-            expect(response.statusCode).toBe(200);
-            expect(response.body.message).toBe('Cliente actualizado con exito');
-            expect(response.body.client.nameClient).toBe('Ana Actualizada');
-            expect(response.body.client.phoneClient).toBe('555-1234');
-            expect(response.body.client.surnameClient).toBe('Prueba');
-        });
-    
-        //Prueba PUT intento de actualizar un cliente inexistente
-        test('should throw 404 if client does not exist', async () => {
-            const dniInexistente = '111111-NO-EXISTE';
-            const datosActualizados = {
-                newNameClient: 'Cliente Fantasma'
-            };
-    
-            const res = await request(app)
-                .put(`/api/clients/${dniInexistente}`)
-                .send(datosActualizados);
-    
-            expect(res.statusCode).toBe(404);
-            expect(res.body.message).toBe('Cliente no encontrado');
-        });
-
-        test('should update only new data and perserve the old ones', async () => {
-            // Crear el cliente original
-            const clientForUpdate = { ...mockClient, dniClient: 'UPDATE-TEST-1' };
-            await request(app).post('/api/clients').send(clientForUpdate);
-            
-            const datosActualizadosParciales = {
-                newSurnameClient: 'Test Actualizado',
-                newEmailClient: 'nuevo@email.com'
-                // No enviamos newNameClient
-            };
-
-            const response = await request(app)
-                .put(`/api/clients/${clientForUpdate.dniClient}`)
-                .send(datosActualizadosParciales);
-
-            expect(response.statusCode).toBe(200);
-            expect(response.body.client.surnameClient).toBe('Test Actualizado');
-            expect(response.body.client.emailClient).toBe('nuevo@email.com');
-            expect(response.body.client.nameClient).toBe(clientForUpdate.nameClient); 
-        });
-
-        test('should fail update if new email format is invalid', async () => {
-            // Usamos un cliente existente
-            const dni = '98765432A';
-            
-            const badUpdate = { newEmailClient: 'correo-malo' };
-
-            const response = await request(app).put(`/api/clients/${dni}`).send(badUpdate);
-
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('El nuevo email no tiene un formato válido');
-        });
-
-        test('should fail update if name becomes empty string', async () => {
-            const dni = '98765432A';
-            
-            const badUpdate = { newNameClient: '   ' }; // Solo espacios
-
-            const response = await request(app).put(`/api/clients/${dni}`).send(badUpdate);
-
-            expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('El nombre o apellido no pueden quedar vacíos');
-        });
-
-        test('should trim data on update', async () => {
-            const dni = '98765432A';
-            const messyUpdate = { newNameClient: '  Ana Limpia  ' };
-
-            const response = await request(app).put(`/api/clients/${dni}`).send(messyUpdate);
-
-            expect(response.statusCode).toBe(200);
-            expect(response.body.client.nameClient).toBe('Ana Limpia'); // Sin espacios extra
-        });
-    });
-
-    describe('DELETE /api/clients/:dni', () => {
-        test('should delete a specific client successfully', async () => {
-            // Crear cliente especifico para borrar
-            const deleteTarget = { ...mockClient, dniClient: 'TO-DELETE-1' };
-            await request(app).post('/api/clients').send(deleteTarget);
-
-            // Borrar el cliente
-            const deleteResponse = await request(app)
-                .delete(`/api/clients/${deleteTarget.dniClient}`);
-
-            // Comprobar la respuesta de borrado
-            expect(deleteResponse.statusCode).toBe(200);
-            expect(deleteResponse.body.message).toBe('Cliente eliminado con exito');
-
-            // Verificar que fue borrado
-            const getResponse = await request(app).get(`/api/clients/${deleteTarget.dniClient}`);
-            expect(getResponse.statusCode).toBe(404);
-        });
-
-        test('should throw 404 if client does not exist', async () => {
-            const response = await request(app).delete('/api/clients/DNI-FALSO-123');
-
-            expect(response.statusCode).toBe(404);
-            expect(response.body.message).toBe('Cliente no encontrado');
-        });
-    });
+// Prevent actual MongoDB connection
+jest.mock('mongoose', () => {
+  const m = jest.requireActual('mongoose');
+  m.connect = jest.fn().mockResolvedValue(true);
+  return m;
 });
 
-describe('app 404 Handler', () => {
-    test('should return 404 for a non-existent route', async () => {
-        const response = await request(app).get('/api/ruta-inventada-que-no-existe'); 
+jest.mock('../src/models/Cliente', () => ({
+  find: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  findOneAndDelete: jest.fn(),
+}));
 
-        expect(response.statusCode).toBe(404);
-        expect(response.body).toHaveProperty('message');
-        expect(response.body.message).toBe('Ruta no encontrada');
+jest.mock('../src/models/Usuario', () => {
+  const MockUsuario = jest.fn().mockImplementation(function (data) {
+    Object.assign(this, data);
+    this._id = 'mock-user-id';
+    this.save = jest.fn().mockResolvedValue(this);
+  });
+  MockUsuario.findById = jest.fn();
+  MockUsuario.findOne = jest.fn();
+  return MockUsuario;
+});
+
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn(),
+  sign: jest.fn(),
+}));
+
+jest.mock('bcryptjs', () => ({
+  hash: jest.fn(),
+  compare: jest.fn(),
+}));
+
+const request = require('supertest');
+const app = require('../src/app');
+const Cliente = require('../src/models/Cliente');
+const Usuario = require('../src/models/Usuario');
+const jwt = require('jsonwebtoken');
+
+// Suppress console
+beforeAll(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterAll(() => {
+  console.log.mockRestore();
+  console.error.mockRestore();
+});
+
+// Valid Ecuadorian cedulas
+const CEDULA_1 = '1713175071';
+const CEDULA_2 = '0926694135';
+const CEDULA_3 = '0601234560'; // verifier = 0 (sum%10===0 branch)
+
+const mockClient = {
+  _id: 'c1',
+  dniClient: CEDULA_1,
+  nameClient: 'Marcos',
+  surnameClient: 'Escobar',
+  addressClient: 'Av. Siempre Viva 742',
+  emailClient: 'marcos@test.com',
+  phoneClient: '0987654321',
+};
+
+function setupAuth(role = 'empleado') {
+  jwt.verify.mockReturnValue({ id: 'uid' });
+  Usuario.findById.mockReturnValue({
+    select: jest
+      .fn()
+      .mockResolvedValue({ _id: 'uid', username: 'u', rol: role }),
+  });
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  setupAuth('empleado');
+});
+
+describe('Client API', () => {
+  // ─── GET /api/clients ───
+  describe('GET /api/clients', () => {
+    test('returns list of clients', async () => {
+      Cliente.find.mockResolvedValue([mockClient]);
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual([mockClient]);
     });
+
+    test('returns empty list', async () => {
+      Cliente.find.mockResolvedValue([]);
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+
+    test('returns 500 on DB error', async () => {
+      Cliente.find.mockRejectedValue(new Error('DB fail'));
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
+      expect(res.body.error).toBe('DB fail');
+    });
+  });
+
+  // ─── GET /api/clients/:dni ───
+  describe('GET /api/clients/:dni', () => {
+    test('returns client by DNI', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .get(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.nameClient).toBe('Marcos');
+    });
+
+    test('returns 404 if not found', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .get('/api/clients/0000000000')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Cliente no encontrado');
+    });
+
+    test('returns 500 on DB error', async () => {
+      Cliente.findOne.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .get(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
+    });
+  });
+
+  // ─── POST /api/clients ───
+  describe('POST /api/clients', () => {
+    test('creates client successfully', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      Cliente.create.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'Marcos',
+          surnameClient: 'Escobar',
+          addressClient: 'Av. Siempre Viva 742',
+          emailClient: 'marcos@test.com',
+          phoneClient: '0987654321',
+        });
+      expect(res.statusCode).toBe(201);
+      expect(res.body.message).toBe('Cliente creado con exito');
+      expect(res.body.client).toBeDefined();
+    });
+
+    test('creates client without optional fields', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      Cliente.create.mockResolvedValue({
+        ...mockClient,
+        emailClient: '',
+        phoneClient: '',
+      });
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(201);
+    });
+
+    test('creates client with verifier=0 cedula (sum%10===0 branch)', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      Cliente.create.mockResolvedValue({ ...mockClient, dniClient: CEDULA_3 });
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_3,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(201);
+    });
+
+    test('fails with missing required fields', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({ nameClient: 'Solo' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toMatch(/Campos obligatorios faltantes/);
+    });
+
+    test('fails with whitespace-only required fields', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '   ',
+          nameClient: 'V',
+          surnameClient: 'V',
+          addressClient: 'V',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain(
+        'deben ser texto válido y no estar vacíos',
+      );
+    });
+
+    test('fails with cedula not 10 digits', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '12345',
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with province > 24', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '2500000000',
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with province < 1', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '0012345678',
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with third digit >= 6', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '0160000000',
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with bad verifier digit', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: '1713175072',
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid email', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+          emailClient: 'bad',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('El formato del email no es válido');
+    });
+
+    test('fails with invalid phone', async () => {
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+          phoneClient: '1234567890',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      );
+    });
+
+    test('fails when client already exists (409)', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(409);
+      expect(res.body.message).toBe('Ya existe un cliente con ese DNI');
+    });
+
+    test('trims whitespace from fields', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      Cliente.create.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: `  ${CEDULA_1}  `,
+          nameClient: '  Marcos  ',
+          surnameClient: '  Escobar  ',
+          addressClient: '  Addr  ',
+          emailClient: '  marcos@test.com  ',
+          phoneClient: '  0987654321  ',
+        });
+      expect(res.statusCode).toBe(201);
+      expect(Cliente.create).toHaveBeenCalledWith(
+        expect.objectContaining({ dniClient: CEDULA_1, nameClient: 'Marcos' }),
+      );
+    });
+
+    test('returns 400 on create error (catch)', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      Cliente.create.mockRejectedValue(new Error('Create fail'));
+      const res = await request(app)
+        .post('/api/clients')
+        .set('Authorization', 'Bearer t')
+        .send({
+          dniClient: CEDULA_1,
+          nameClient: 'A',
+          surnameClient: 'B',
+          addressClient: 'C',
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.error).toBe('Create fail');
+    });
+  });
+
+  // ─── PUT /api/clients/:dni ───
+  describe('PUT /api/clients/:dni', () => {
+    test('updates client successfully', async () => {
+      const updated = { ...mockClient, nameClient: 'Updated' };
+      Cliente.findOne.mockResolvedValue(mockClient);
+      Cliente.findOneAndUpdate.mockResolvedValue(updated);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newNameClient: 'Updated' });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe('Cliente actualizado con exito');
+      expect(res.body.client.nameClient).toBe('Updated');
+    });
+
+    test('returns 404 if not found', async () => {
+      Cliente.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .put('/api/clients/0000000000')
+        .set('Authorization', 'Bearer t')
+        .send({ newNameClient: 'Ghost' });
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Cliente no encontrado');
+    });
+
+    test('fails with invalid new email', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newEmailClient: 'bad' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'El nuevo email no tiene un formato válido',
+      );
+    });
+
+    test('fails with invalid new phone', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newPhoneClient: '1234567890' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      );
+    });
+
+    test('fails with empty name', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newNameClient: '' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'El nombre o apellido no pueden quedar vacíos',
+      );
+    });
+
+    test('fails with empty surname', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newSurnameClient: '' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'El nombre o apellido no pueden quedar vacíos',
+      );
+    });
+
+    test('trims update fields', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      Cliente.findOneAndUpdate.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({
+          newNameClient: '  Ana  ',
+          newSurnameClient: '  Pérez  ',
+          newEmailClient: '  a@b.com  ',
+          newPhoneClient: '  0987654321  ',
+          newAddressClient: '  Dir  ',
+        });
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('allows clearing email with empty string', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      Cliente.findOneAndUpdate.mockResolvedValue({
+        ...mockClient,
+        emailClient: '',
+      });
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newEmailClient: '' });
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('allows clearing phone with empty string', async () => {
+      Cliente.findOne.mockResolvedValue(mockClient);
+      Cliente.findOneAndUpdate.mockResolvedValue({
+        ...mockClient,
+        phoneClient: '',
+      });
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newPhoneClient: '' });
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('returns 500 on DB error (catch)', async () => {
+      Cliente.findOne.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .put(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newNameClient: 'X' });
+      expect(res.statusCode).toBe(500);
+    });
+  });
+
+  // ─── DELETE /api/clients/:dni ───
+  describe('DELETE /api/clients/:dni', () => {
+    test('deletes client successfully', async () => {
+      Cliente.findOneAndDelete.mockResolvedValue(mockClient);
+      const res = await request(app)
+        .delete(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe('Cliente eliminado con exito');
+    });
+
+    test('returns 404 if not found', async () => {
+      Cliente.findOneAndDelete.mockResolvedValue(null);
+      const res = await request(app)
+        .delete('/api/clients/0000000000')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Cliente no encontrado');
+    });
+
+    test('returns 500 on DB error (catch)', async () => {
+      Cliente.findOneAndDelete.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .delete(`/api/clients/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
+    });
+  });
+
+  // ─── Auth middleware coverage via client routes ───
+  describe('roleMiddleware coverage', () => {
+    test('returns 401 without token', async () => {
+      const res = await request(app).get('/api/clients');
+      expect(res.statusCode).toBe(401);
+      expect(res.body.msg).toBe('No autorizado - Token no proporcionado');
+    });
+
+    test('returns 403 with invalid/expired token', async () => {
+      jwt.verify.mockImplementation(() => {
+        throw new Error('bad');
+      });
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer bad');
+      expect(res.statusCode).toBe(403);
+      expect(res.body.msg).toBe('Token inválido o expirado');
+    });
+
+    test('returns 404 if user from token not found', async () => {
+      jwt.verify.mockReturnValue({ id: 'x' });
+      Usuario.findById.mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      });
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(404);
+      expect(res.body.msg).toBe('Usuario no encontrado');
+    });
+
+    test('returns 403 if user role not allowed', async () => {
+      jwt.verify.mockReturnValue({ id: 'x' });
+      Usuario.findById.mockReturnValue({
+        select: jest
+          .fn()
+          .mockResolvedValue({ _id: 'x', username: 'u', rol: 'cliente' }),
+      });
+      const res = await request(app)
+        .get('/api/clients')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(403);
+      expect(res.body.msg).toMatch(/Acceso denegado/);
+    });
+  });
+});
+
+describe('App 404 Handler', () => {
+  test('returns 404 for non-existent route', async () => {
+    const res = await request(app).get('/api/ruta-inventada');
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe('Ruta no encontrada');
+  });
 });

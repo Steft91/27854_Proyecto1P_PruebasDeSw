@@ -1,267 +1,508 @@
+// Prevent actual MongoDB connection
+jest.mock('mongoose', () => {
+  const m = jest.requireActual('mongoose');
+  m.connect = jest.fn().mockResolvedValue(true);
+  return m;
+});
+
+jest.mock('../src/models/Empleado', () => ({
+  find: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  findOneAndDelete: jest.fn(),
+}));
+
+jest.mock('../src/models/Usuario', () => {
+  const MockUsuario = jest.fn().mockImplementation(function (data) {
+    Object.assign(this, data);
+    this._id = 'mock-user-id';
+    this.save = jest.fn().mockResolvedValue(this);
+  });
+  MockUsuario.findById = jest.fn();
+  MockUsuario.findOne = jest.fn();
+  return MockUsuario;
+});
+
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn(),
+  sign: jest.fn(),
+}));
+
+jest.mock('bcryptjs', () => ({
+  hash: jest.fn(),
+  compare: jest.fn(),
+}));
+
 const request = require('supertest');
 const app = require('../src/app');
+const Empleado = require('../src/models/Empleado');
+const Usuario = require('../src/models/Usuario');
+const jwt = require('jsonwebtoken');
+
+beforeAll(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterAll(() => {
+  console.log.mockRestore();
+  console.error.mockRestore();
+});
+
+// Valid Ecuadorian cedulas
+const CEDULA_1 = '1713175071';
+const CEDULA_2 = '0926694135';
+const CEDULA_3 = '0601234560'; // verifier=0 branch
 
 const mockEmpleado = {
-  cedulaEmpleado: '1234567890',
+  _id: 'e1',
+  cedulaEmpleado: CEDULA_1,
   nombreEmpleado: 'Carlos Pérez',
   emailEmpleado: 'carlos@test.com',
   celularEmpleado: '0987654321',
-  sueldoEmpleado: 1500.5,
+  direccionEmpleado: 'Calle 1',
+  sueldoEmpleado: 1500,
 };
 
-const mockEmpleado2 = {
-  cedulaEmpleado: '0987654321',
-  nombreEmpleado: 'María González',
-  celularEmpleado: '0912345678',
-  sueldoEmpleado: 2000.0,
-};
+function setupAuth(role = 'administrador') {
+  jwt.verify.mockReturnValue({ id: 'uid' });
+  Usuario.findById.mockReturnValue({
+    select: jest
+      .fn()
+      .mockResolvedValue({ _id: 'uid', username: 'admin', rol: role }),
+  });
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  setupAuth('administrador');
+});
 
 describe('Empleado API', () => {
+  // ─── GET /api/empleados ───
   describe('GET /api/empleados', () => {
-    test('should return an empty list initially', async () => {
-      const response = await request(app).get('/api/empleados');
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual([]);
-    });
-
-    test('should find an empleado if empleado exists', async () => {
-      await request(app).post('/api/empleados').send(mockEmpleado);
-
-      const response = await request(app).get(`/api/empleados/${mockEmpleado.cedulaEmpleado}`);
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.nombreEmpleado).toBe(mockEmpleado.nombreEmpleado);
-    });
-
-    test('should throw 404 if empleado cedula does not exist', async () => {
-      const response = await request(app).get('/api/empleados/9999999999');
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe('Empleado no encontrado');
-    });
-  });
-
-  describe('POST /api/empleados', () => {
-    test('should create a new empleado successfully', async () => {
-      const response = await request(app).post('/api/empleados').send(mockEmpleado2);
-      expect(response.statusCode).toBe(201);
-      expect(response.body.empleado).toBeDefined();
-      expect(response.body.empleado).toHaveProperty('cedulaEmpleado');
-      expect(response.body.empleado.nombreEmpleado).toBe('María González');
-    });
-
-    test('should fail because data is missing', async () => {
-      const empleadoIncompleto = {
-        nombreEmpleado: 'Incompleto',
-      };
-
-      const response = await request(app).post('/api/empleados').send(empleadoIncompleto);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(
-        'Campos obligatorios faltantes (cédula, nombre, celular o sueldo)'
-      );
-    });
-
-    test('should fail because cedula already exists', async () => {
-      await request(app).post('/api/empleados').send(mockEmpleado);
-
-      const response = await request(app)
-        .post('/api/empleados')
-        .send({
-          ...mockEmpleado2,
-          cedulaEmpleado: '1234567890',
-        });
-
-      expect(response.statusCode).toBe(409);
-      expect(response.body.message).toBe('Ya existe un empleado con esa cédula');
-    });
-
-    test('should fail because cedula is invalid', async () => {
-      const empleadoCedulaInvalida = {
-        cedulaEmpleado: '12345',
-        nombreEmpleado: 'Test',
-        celularEmpleado: '0987654321',
-        sueldoEmpleado: 1500,
-      };
-
-      const response = await request(app).post('/api/empleados').send(empleadoCedulaInvalida);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('Cédula ecuatoriana inválida (debe tener 10 dígitos)');
-    });
-
-    test('should fail because salary is negative', async () => {
-      const empleadoSueldoNegativo = {
-        cedulaEmpleado: '1111111111',
-        nombreEmpleado: 'Test',
-        celularEmpleado: '0987654321',
-        sueldoEmpleado: -100,
-      };
-
-      const response = await request(app).post('/api/empleados').send(empleadoSueldoNegativo);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('El sueldo debe ser mayor a 0');
-    });
-  });
-
-  describe('PUT /api/empleados/:cedula', () => {
-    test('should update a specific empleado info', async () => {
-      const empleadoNuevo = {
-        cedulaEmpleado: '1717171717',
-        nombreEmpleado: 'Ana Prueba',
-        celularEmpleado: '0998877665',
-        sueldoEmpleado: 1800,
-      };
-
-      const postRes = await request(app).post('/api/empleados').send(empleadoNuevo);
-      const cedula = postRes.body.empleado.cedulaEmpleado;
-
-      const datosActualizados = {
-        newNombreEmpleado: 'Ana Actualizada',
-        newSueldoEmpleado: 2500,
-      };
-
-      const response = await request(app).put(`/api/empleados/${cedula}`).send(datosActualizados);
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe('Empleado actualizado con éxito');
-      expect(response.body.empleado.nombreEmpleado).toBe('Ana Actualizada');
-      expect(response.body.empleado.sueldoEmpleado).toBe(2500);
-    });
-
-    test('should throw 404 if empleado does not exist', async () => {
-      const cedulaInexistente = '9999999999';
-      const datosActualizados = {
-        newNombreEmpleado: 'Empleado Fantasma',
-      };
-
+    test('returns list of empleados', async () => {
+      Empleado.find.mockResolvedValue([mockEmpleado]);
       const res = await request(app)
-        .put(`/api/empleados/${cedulaInexistente}`)
-        .send(datosActualizados);
+        .get('/api/empleados')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual([mockEmpleado]);
+    });
 
+    test('returns empty list', async () => {
+      Empleado.find.mockResolvedValue([]);
+      const res = await request(app)
+        .get('/api/empleados')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+
+    test('returns 500 on DB error', async () => {
+      Empleado.find.mockRejectedValue(new Error('DB fail'));
+      const res = await request(app)
+        .get('/api/empleados')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
+      expect(res.body.error).toBe('DB fail');
+    });
+  });
+
+  // ─── GET /api/empleados/:cedula ───
+  describe('GET /api/empleados/:cedula', () => {
+    test('returns empleado by cedula', async () => {
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .get(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.nombreEmpleado).toBe('Carlos Pérez');
+    });
+
+    test('returns 404 if not found', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .get('/api/empleados/0000000000')
+        .set('Authorization', 'Bearer t');
       expect(res.statusCode).toBe(404);
       expect(res.body.message).toBe('Empleado no encontrado');
     });
 
-    test('should update only new data and preserve the old ones', async () => {
-      await request(app).post('/api/empleados').send(mockEmpleado);
-
-      const datosActualizadosParciales = {
-        newEmailEmpleado: 'nuevo@email.com',
-        newSueldoEmpleado: 3000,
-      };
-
-      const response = await request(app)
-        .put(`/api/empleados/${mockEmpleado.cedulaEmpleado}`)
-        .send(datosActualizadosParciales);
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.empleado.emailEmpleado).toBe('nuevo@email.com');
-      expect(response.body.empleado.sueldoEmpleado).toBe(3000);
-      expect(response.body.empleado.nombreEmpleado).toBe(mockEmpleado.nombreEmpleado);
+    test('returns 500 on DB error', async () => {
+      Empleado.findOne.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .get(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
     });
-
-    test('should fail when updating with negative salary', async () => {
-      await request(app).post('/api/empleados').send(mockEmpleado);
-
-      const datosInvalidos = {
-        newSueldoEmpleado: -500,
-      };
-
-      const response = await request(app)
-        .put(`/api/empleados/${mockEmpleado.cedulaEmpleado}`)
-        .send(datosInvalidos);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe('El sueldo debe ser mayor a 0');
-    });
-
-    test('should update only celular and preserve salary', async () => {
-      const empleadoPrueba = {
-        cedulaEmpleado: '1919191919',
-        nombreEmpleado: 'Test Celular',
-        celularEmpleado: '0900000001',
-        sueldoEmpleado: 1000,
-      };
-      await request(app).post('/api/empleados').send(empleadoPrueba);
-
-      const datosActualizados = {
-        newCelularEmpleado: '0911111111',
-      };
-
-      const response = await request(app)
-        .put(`/api/empleados/${empleadoPrueba.cedulaEmpleado}`)
-        .send(datosActualizados);
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.empleado.celularEmpleado).toBe('0911111111');
-      expect(response.body.empleado.sueldoEmpleado).toBe(1000); 
-      expect(response.body.empleado.nombreEmpleado).toBe('Test Celular');
-    });
-
   });
 
+  // ─── POST /api/empleados ───
+  describe('POST /api/empleados', () => {
+    test('creates empleado successfully', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      Empleado.create.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'Carlos Pérez',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1500,
+          emailEmpleado: 'carlos@test.com',
+          direccionEmpleado: 'Calle 1',
+        });
+      expect(res.statusCode).toBe(201);
+      expect(res.body.message).toBe('Empleado creado con éxito');
+      expect(res.body.empleado).toBeDefined();
+    });
+
+    test('creates empleado without optional fields', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      Empleado.create.mockResolvedValue({
+        ...mockEmpleado,
+        emailEmpleado: '',
+        direccionEmpleado: '',
+      });
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'Test',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(201);
+    });
+
+    test('creates empleado with verifier=0 cedula', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      Empleado.create.mockResolvedValue({
+        ...mockEmpleado,
+        cedulaEmpleado: CEDULA_3,
+      });
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_3,
+          nombreEmpleado: 'Test',
+          celularEmpleado: '0912345678',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(201);
+    });
+
+    test('fails with missing required fields', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({ nombreEmpleado: 'Incompleto' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'Campos obligatorios faltantes (cédula, nombre, celular o sueldo)',
+      );
+    });
+
+    test('fails with invalid cedula (not 10 digits)', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: '12345',
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid cedula (province > 24)', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: '2500000000',
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid cedula (province < 1)', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: '0012345678',
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid cedula (3rd digit >= 6)', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: '0160000000',
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid cedula (bad verifier)', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: '1713175072',
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('Cédula ecuatoriana inválida');
+    });
+
+    test('fails with invalid celular', async () => {
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'T',
+          celularEmpleado: '1234567890',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      );
+    });
+
+    test('fails when empleado already exists (409)', async () => {
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(409);
+      expect(res.body.message).toBe('Ya existe un empleado con esa cédula');
+    });
+
+    test('fails with sueldo <= 0', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: -100,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('El sueldo debe ser mayor a 0');
+    });
+
+    test('fails with sueldo = 0', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 0,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('El sueldo debe ser mayor a 0');
+    });
+
+    test('returns 400 on create error (catch)', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      Empleado.create.mockRejectedValue(new Error('Create fail'));
+      const res = await request(app)
+        .post('/api/empleados')
+        .set('Authorization', 'Bearer t')
+        .send({
+          cedulaEmpleado: CEDULA_1,
+          nombreEmpleado: 'T',
+          celularEmpleado: '0987654321',
+          sueldoEmpleado: 1000,
+        });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.error).toBe('Create fail');
+    });
+  });
+
+  // ─── PUT /api/empleados/:cedula ───
+  describe('PUT /api/empleados/:cedula', () => {
+    test('updates empleado successfully', async () => {
+      const updated = { ...mockEmpleado, nombreEmpleado: 'Updated' };
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      Empleado.findOneAndUpdate.mockResolvedValue(updated);
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newNombreEmpleado: 'Updated', newSueldoEmpleado: 2500 });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe('Empleado actualizado con éxito');
+      expect(res.body.empleado.nombreEmpleado).toBe('Updated');
+    });
+
+    test('returns 404 if not found', async () => {
+      Empleado.findOne.mockResolvedValue(null);
+      const res = await request(app)
+        .put('/api/empleados/0000000000')
+        .set('Authorization', 'Bearer t')
+        .send({ newNombreEmpleado: 'Ghost' });
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Empleado no encontrado');
+    });
+
+    test('fails with invalid new sueldo (<= 0)', async () => {
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newSueldoEmpleado: -500 });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe('El sueldo debe ser mayor a 0');
+    });
+
+    test('fails with invalid new celular', async () => {
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newCelularEmpleado: '1234567890' });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe(
+        'Número de celular inválido. Debe empezar con 09 y tener 10 dígitos',
+      );
+    });
+
+    test('updates partial fields preserving others', async () => {
+      const updated = {
+        ...mockEmpleado,
+        emailEmpleado: 'new@test.com',
+        sueldoEmpleado: 3000,
+      };
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      Empleado.findOneAndUpdate.mockResolvedValue(updated);
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newEmailEmpleado: 'new@test.com', newSueldoEmpleado: 3000 });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.empleado.emailEmpleado).toBe('new@test.com');
+      expect(res.body.empleado.sueldoEmpleado).toBe(3000);
+      expect(res.body.empleado.nombreEmpleado).toBe(
+        mockEmpleado.nombreEmpleado,
+      );
+    });
+
+    test('updates all fields', async () => {
+      const updated = {
+        ...mockEmpleado,
+        nombreEmpleado: 'New',
+        emailEmpleado: 'e@e.com',
+        celularEmpleado: '0912345678',
+        direccionEmpleado: 'New Dir',
+        sueldoEmpleado: 5000,
+      };
+      Empleado.findOne.mockResolvedValue(mockEmpleado);
+      Empleado.findOneAndUpdate.mockResolvedValue(updated);
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({
+          newNombreEmpleado: 'New',
+          newEmailEmpleado: 'e@e.com',
+          newCelularEmpleado: '0912345678',
+          newDireccionEmpleado: 'New Dir',
+          newSueldoEmpleado: 5000,
+        });
+      expect(res.statusCode).toBe(200);
+    });
+
+    test('returns 500 on DB error (catch)', async () => {
+      Empleado.findOne.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .put(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t')
+        .send({ newNombreEmpleado: 'X' });
+      expect(res.statusCode).toBe(500);
+    });
+  });
+
+  // ─── DELETE /api/empleados/:cedula ───
   describe('DELETE /api/empleados/:cedula', () => {
-    test('should delete a specific empleado successfully', async () => {
-      await request(app).post('/api/empleados').send(mockEmpleado);
-
-      const deleteResponse = await request(app).delete(
-        `/api/empleados/${mockEmpleado.cedulaEmpleado}`
-      );
-
-      expect(deleteResponse.statusCode).toBe(200);
-      expect(deleteResponse.body.message).toBe('Empleado eliminado con éxito');
-
-      const getResponse = await request(app).get(`/api/empleados/${mockEmpleado.cedulaEmpleado}`);
-      expect(getResponse.statusCode).toBe(404);
+    test('deletes empleado successfully', async () => {
+      Empleado.findOneAndDelete.mockResolvedValue(mockEmpleado);
+      const res = await request(app)
+        .delete(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe('Empleado eliminado con éxito');
     });
 
-    test('should throw 404 if empleado does not exist', async () => {
-      const response = await request(app).delete('/api/empleados/9999999999');
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe('Empleado no encontrado');
+    test('returns 404 if not found', async () => {
+      Empleado.findOneAndDelete.mockResolvedValue(null);
+      const res = await request(app)
+        .delete('/api/empleados/0000000000')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe('Empleado no encontrado');
     });
 
-    test('should verify empleado list is updated after deletion', async () => {
-      // Obtener la cantidad inicial de empleados
-      const initialResponse = await request(app).get('/api/empleados');
-      const initialCount = initialResponse.body.length;
+    test('returns 500 on DB error (catch)', async () => {
+      Empleado.findOneAndDelete.mockRejectedValue(new Error('err'));
+      const res = await request(app)
+        .delete(`/api/empleados/${CEDULA_1}`)
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(500);
+    });
+  });
 
-      // Crear dos nuevos empleados con cédulas únicas para este test
-      const empleadoTest1 = {
-        cedulaEmpleado: '1111111111',
-        nombreEmpleado: 'Test Uno',
-        celularEmpleado: '0999999991',
-        sueldoEmpleado: 1000.0,
-      };
-      const empleadoTest2 = {
-        cedulaEmpleado: '2222222222',
-        nombreEmpleado: 'Test Dos',
-        celularEmpleado: '0999999992',
-        sueldoEmpleado: 1000.0,
-      };
+  // ─── Auth: only administrador can access empleados ───
+  describe('Auth for empleados (admin-only)', () => {
+    test('returns 403 if role is empleado (not admin)', async () => {
+      setupAuth('empleado');
+      Empleado.find.mockResolvedValue([]);
+      const res = await request(app)
+        .get('/api/empleados')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(403);
+      expect(res.body.msg).toMatch(/Acceso denegado/);
+    });
 
-      await request(app).post('/api/empleados').send(empleadoTest1);
-      await request(app).post('/api/empleados').send(empleadoTest2);
-
-      let listResponse = await request(app).get('/api/empleados');
-      expect(listResponse.body.length).toBe(initialCount + 2);
-
-      // Eliminar uno de los empleados de prueba
-      await request(app).delete(`/api/empleados/${empleadoTest1.cedulaEmpleado}`);
-
-      listResponse = await request(app).get('/api/empleados');
-      expect(listResponse.body.length).toBe(initialCount + 1);
-
-      // Verificar que el empleado correcto sigue existiendo
-      const remainingEmpleado = listResponse.body.find(
-        (e) => e.cedulaEmpleado === empleadoTest2.cedulaEmpleado
-      );
-      expect(remainingEmpleado).toBeDefined();
-      expect(remainingEmpleado.cedulaEmpleado).toBe(empleadoTest2.cedulaEmpleado);
+    test('returns 403 if role is cliente', async () => {
+      setupAuth('cliente');
+      const res = await request(app)
+        .get('/api/empleados')
+        .set('Authorization', 'Bearer t');
+      expect(res.statusCode).toBe(403);
     });
   });
 });
