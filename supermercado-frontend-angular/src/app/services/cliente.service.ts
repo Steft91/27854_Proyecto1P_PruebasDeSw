@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Cliente } from '../models';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteService {
@@ -25,7 +25,7 @@ export class ClienteService {
       newSurnameClient: cliente.surnameClient,
       newAddressClient: cliente.addressClient,
       newEmailClient: cliente.emailClient,
-      newPhoneClient: cliente.phoneClient
+      newPhoneClient: cliente.phoneClient,
     };
     return this.http.put<void>(`${this.apiUrl}/${dni}`, payload);
   }
