@@ -104,13 +104,13 @@ jobs:
     steps:
       - name: Verificar estado de los jobs
         run: |
-          echo "✅ CI Pipeline completado"
+          echo "CI Pipeline completado"
           echo "Backend status: ${{ needs.backend.result }}"
           echo "Frontend status: ${{ needs.frontend.result }}"
 
           if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ]; then
-            echo "❌ Algunos jobs fallaron"
+            echo "Algunos jobs fallaron"
             exit 1
           fi
 
-          echo "✅ Todos los tests pasaron correctamente"
+          echo "Todos los tests pasaron correctamente"
