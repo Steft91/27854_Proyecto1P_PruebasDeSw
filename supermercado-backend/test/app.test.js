@@ -78,4 +78,26 @@ describe('app.js error paths', () => {
     expect([400, 500]).toContain(res.statusCode);
     expect(res.body).toHaveProperty('error');
   });
+
+  test('error handler uses default message when err.message is falsy', async () => {
+    // register a test route on an existing mounted router so it runs before app 404
+    const clientRoutes = require('../src/routes/cliente.routes');
+    clientRoutes.get('/__test/no-message', (req, res, next) => next({}));
+
+    const res = await request(app).get('/api/clients/__test/no-message');
+    expect(res.status).toBe(500);
+    expect(res.body).toHaveProperty('msg', 'Error del servidor');
+    // when err.message is undefined the JSON response will omit the `error` key
+    expect(res.body).not.toHaveProperty('error');
+  });
+
+  test('error handler returns provided status and message when present', async () => {
+    const clientRoutes2 = require('../src/routes/cliente.routes');
+    clientRoutes2.get('/__test/with-message', (req, res, next) => next({ status: 418, message: 'I am a teapot' }));
+
+    const res = await request(app).get('/api/clients/__test/with-message');
+    expect(res.status).toBe(418);
+    expect(res.body).toHaveProperty('msg', 'I am a teapot');
+    expect(res.body).toHaveProperty('error', 'I am a teapot');
+  });
 });

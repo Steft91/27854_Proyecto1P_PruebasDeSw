@@ -8,6 +8,7 @@ const providerRoutes = require('./routes/proveedor.routes');
 const empleadoRoutes = require('./routes/empleado.routes');
 const productoRoutes = require('./routes/producto.routes');
 const authRoutes = require('./routes/auth.routes');
+const pedidoRoutes = require('./routes/pedido.routes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/providers', providerRoutes);
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/products', productoRoutes);
+app.use('/api/pedidos', pedidoRoutes);
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {

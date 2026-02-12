@@ -11,13 +11,13 @@ const {
 
 const router = express.Router();
 
-// GET /api/providers  (Get all providers) - Solo administrador
-router.get('/', checkRole(['administrador']), getListProvider);
+// GET /api/providers  (Get all providers) - Administrador y empleado (solo lectura)
+router.get('/', checkRole(['administrador', 'empleado']), getListProvider);
 // POST /api/providers (Create a new provider) - Solo administrador
 router.post('/', checkRole(['administrador']), createNewProvider);
 
-// GET /api/providers/:id (Get a specific provider) - Solo administrador
-router.get('/:id', checkRole(['administrador']), getProviderById);
+// GET /api/providers/:id (Get a specific provider) - Administrador y empleado (solo lectura)
+router.get('/:id', checkRole(['administrador', 'empleado']), getProviderById);
 
 // PUT /api/providers/:id (Update a specific provider) - Solo administrador
 router.put('/:id', checkRole(['administrador']), updateExistingProvider);

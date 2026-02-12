@@ -640,13 +640,13 @@ describe('Provider API', () => {
 
   // ─── Auth for providers (admin-only) ───
   describe('Auth for providers (admin-only)', () => {
-    test('returns 403 if role is empleado', async () => {
+    test('returns 200 if role is empleado', async () => {
       setupAuth('empleado');
       Proveedor.find.mockResolvedValue([]);
       const res = await request(app)
         .get('/api/providers')
         .set('Authorization', 'Bearer t');
-      expect(res.statusCode).toBe(403);
+      expect(res.statusCode).toBe(200);
     });
 
     test('returns 403 if role is cliente', async () => {

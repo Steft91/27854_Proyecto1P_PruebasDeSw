@@ -11,4 +11,5 @@ app.listen(PORT, () => {
   console.log(`   - Proveedores: http://localhost:${PORT}/api/providers`);
   console.log(`   - Productos: http://localhost:${PORT}/api/products`);
   console.log(`   - Empleados: http://localhost:${PORT}/api/empleados`);
+  console.log(`   - Pedidos: http://localhost:${PORT}/api/pedidos`);
 });
