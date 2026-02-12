@@ -1,4 +1,3 @@
-// Prevent actual MongoDB connection
 jest.mock('mongoose', () => {
   const m = jest.requireActual('mongoose');
   m.connect = jest.fn().mockResolvedValue(true);
@@ -49,9 +48,8 @@ afterAll(() => {
   console.error.mockRestore();
 });
 
-// Valid Ecuadorian cedulas
 const CEDULA_1 = '1713175071';
-const CEDULA_3 = '0601234560'; // verifier=0 branch
+const CEDULA_3 = '0601234560';
 
 const mockEmpleado = {
   _id: 'e1',
