@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { EmpleadoService } from './empleado.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { EmpleadoService } from './empleado.service';
+import { Empleado } from '../models';
 import { environment } from '../../environments/environment';
 
 describe('EmpleadoService', () => {
@@ -9,9 +10,22 @@ describe('EmpleadoService', () => {
   let httpMock: HttpTestingController;
   const apiUrl = `${environment.apiUrl}/empleados`;
 
+  const mockEmpleado: Empleado = {
+    cedulaEmpleado: '1234567890',
+    nombreEmpleado: 'María López',
+    emailEmpleado: 'maria@test.com',
+    celularEmpleado: '0987654321',
+    direccionEmpleado: 'Avenida 456',
+    sueldoEmpleado: 1500
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [EmpleadoService, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        EmpleadoService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
     });
     service = TestBed.inject(EmpleadoService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -21,44 +35,75 @@ describe('EmpleadoService', () => {
     httpMock.verify();
   });
 
-  it('obtenerTodos: debe retornar lista (GET)', () => {
-    service.obtenerTodos().subscribe();
-    const req = httpMock.expectOne(apiUrl);
-    expect(req.request.method).toBe('GET');
-    req.flush([]);
+  it('should be created', () => {
+    expect(service).toBeTruthy();
   });
 
-  it('crear: debe enviar datos (POST)', () => {
-    const mockData = { cedulaEmpleado: '1', nombreEmpleado: 'A' } as any;
-    service.crear(mockData).subscribe();
+  describe('obtenerTodos', () => {
+    it('should retrieve all empleados', () => {
+      const mockEmpleados: Empleado[] = [
+        mockEmpleado,
+        { ...mockEmpleado, cedulaEmpleado: '0987654321', nombreEmpleado: 'Pedro Gómez' }
+      ];
 
-    const req = httpMock.expectOne(apiUrl);
-    expect(req.request.method).toBe('POST');
-    req.flush({});
+      service.obtenerTodos().subscribe(empleados => {
+        expect(empleados.length).toBe(2);
+        expect(empleados).toEqual(mockEmpleados);
+      });
+
+      const req = httpMock.expectOne(apiUrl);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockEmpleados);
+    });
   });
 
-  it('actualizar: debe enviar datos transformados (PUT)', () => {
-    const id = '1';
-    const mockData = { nombreEmpleado: 'B' } as any;
 
-    service.actualizar(id, mockData).subscribe();
+  describe('crear', () => {
+    it('should create a new empleado', () => {
+      service.crear(mockEmpleado).subscribe(() => {
+      });
 
-    const req = httpMock.expectOne(`${apiUrl}/${id}`);
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual(
-      jasmine.objectContaining({
-        newNombreEmpleado: 'B',
-      }),
-    );
-    req.flush({});
+      const req = httpMock.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      req.flush(null);
+    });
   });
 
-  it('eliminar: debe borrar (DELETE)', () => {
-    const id = '1';
-    service.eliminar(id).subscribe();
+  describe('actualizar', () => {
+    it('should update an existing empleado', () => {
+      const empleadoActualizado: Empleado = {
+        ...mockEmpleado,
+        sueldoEmpleado: 1800
+      };
 
-    const req = httpMock.expectOne(`${apiUrl}/${id}`);
-    expect(req.request.method).toBe('DELETE');
-    req.flush({});
+      const expectedPayload = {
+        newNombreEmpleado: 'María López',
+        newEmailEmpleado: 'maria@test.com',
+        newCelularEmpleado: '0987654321',
+        newDireccionEmpleado: 'Avenida 456',
+        newSueldoEmpleado: 1800
+      };
+
+      service.actualizar('1234567890', empleadoActualizado).subscribe(() => {
+        expect(true).toBeTrue();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/1234567890`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(expectedPayload);
+      req.flush(null);
+    });
+  });
+
+  describe('eliminar', () => {
+    it('should delete an empleado', () => {
+      service.eliminar('1234567890').subscribe(response => {
+        expect(response).toBeTruthy();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/1234567890`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ msg: 'Empleado eliminado' });
+    });
   });
 });

@@ -1,0 +1,18 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Gestión de Clientes</h2>
+    <p>Administra la información de los clientes del supermercado</p>
+  </div>
+
+  <!-- Formulario de Cliente -->
+  <app-cliente-form
+    [clienteEditar]="clienteEditar"
+    (guardar)="onClienteGuardado()"
+    (cancelar)="cancelarEdicion()"
+  ></app-cliente-form>
+
+  <!-- Lista de Clientes -->
+  <app-clientes-list
+    (editar)="setEditCliente($event)"
+  ></app-clientes-list>
+</div>

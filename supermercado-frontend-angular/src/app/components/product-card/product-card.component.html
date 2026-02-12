@@ -1,0 +1,49 @@
+<div class="product-card" [class.out-of-stock]="!hayStock()">
+  <!-- Imagen del producto (placeholder) -->
+  <div class="product-image">
+    <div class="image-placeholder">
+      <span class="product-icon">📦</span>
+    </div>
+
+    <!-- Badge de carrito si está agregado -->
+    <div class="in-cart-badge" *ngIf="estaEnCarrito()">
+      <span>🛒 {{ getCantidadEnCarrito() }}</span>
+    </div>
+  </div>
+
+  <!-- Información del producto -->
+  <div class="product-info">
+    <h3 class="product-name">{{ producto.nameProduct }}</h3>
+
+    <p class="product-description">
+      {{ producto.descriptionProduct }}
+    </p>
+
+    <div class="product-code">
+      <small>Código: {{ producto.codeProduct }}</small>
+    </div>
+
+    <!-- Stock -->
+    <div class="product-stock" [ngClass]="getStockClass()">
+      <span>{{ getStockText() }}</span>
+    </div>
+
+    <!-- Precio y acción -->
+    <div class="product-footer">
+      <div class="product-price">
+        <span class="price-label">Precio:</span>
+        <span class="price-value">${{ producto.priceProduct.toFixed(2) }}</span>
+      </div>
+
+      <button
+        class="btn-add-to-cart"
+        (click)="agregarAlCarrito()"
+        [disabled]="!hayStock()"
+        [title]="hayStock() ? 'Agregar al carrito' : 'Sin stock disponible'"
+      >
+        <span *ngIf="hayStock()">+ Agregar</span>
+        <span *ngIf="!hayStock()">Sin Stock</span>
+      </button>
+    </div>
+  </div>
+</div>

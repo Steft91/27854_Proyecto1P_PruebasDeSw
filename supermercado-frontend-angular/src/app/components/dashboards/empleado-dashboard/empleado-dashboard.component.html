@@ -1,0 +1,51 @@
+<!-- Header (Fixed) -->
+<app-header
+  [userName]="userName()"
+  [userRole]="userRole()"
+  (logout)="onLogout()"
+></app-header>
+
+<!-- Sidebar (Fixed) -->
+<app-sidebar
+  [navItems]="navItems"
+  basePath="/empleado"
+></app-sidebar>
+
+<!-- Dashboard Container -->
+<div class="dashboard-container">
+  <!-- Main Layout -->
+  <div class="dashboard-layout">
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Welcome Section with Stats -->
+      <div class="welcome-section empleado-theme">
+        <div class="welcome-header">
+          <h2>Panel de Empleado</h2>
+          <p>Bienvenido, {{ userName() }}. Gestiona clientes y productos del supermercado.</p>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+          <app-stats-card
+            title="Total Clientes"
+            [value]="totalClientes()"
+            icon="👥"
+            color="secondary"
+          ></app-stats-card>
+
+          <app-stats-card
+            title="Total Productos"
+            [value]="totalProductos()"
+            icon="📦"
+            color="success"
+          ></app-stats-card>
+        </div>
+      </div>
+
+      <!-- Child Routes Content -->
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

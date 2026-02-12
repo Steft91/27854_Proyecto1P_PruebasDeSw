@@ -1,0 +1,18 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Gestión de Empleados</h2>
+    <p>Administra la información de los empleados del supermercado</p>
+  </div>
+
+  <!-- Formulario de Empleado -->
+  <app-empleado-form
+    [empleadoEditar]="empleadoEditar"
+    (guardar)="onEmpleadoGuardado()"
+    (cancelar)="cancelarEdicion()"
+  ></app-empleado-form>
+
+  <!-- Lista de Empleados -->
+  <app-empleados-list
+    (editar)="setEditEmpleado($event)"
+  ></app-empleados-list>
+</div>

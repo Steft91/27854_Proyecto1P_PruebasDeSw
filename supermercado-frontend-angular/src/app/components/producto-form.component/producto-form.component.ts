@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { ProductoService } from '../../services/producto.service';
 import { ProveedorService } from '../../services/proveedor.service';
 import { Proveedor, Producto } from '../../models';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-producto-form',
@@ -26,13 +27,13 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   isSubmitting = false;
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private productoService: ProductoService,
     private proveedorService: ProveedorService
   ) {
     this.form = this.fb.group({
-      //codeProduct: ['', [Validators.required, codigoProductoValidator]], 
-      codeProduct: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9\-]+$/)]], 
+      //codeProduct: ['', [Validators.required, codigoProductoValidator]],
+      codeProduct: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9\-]+$/)]],
       nameProduct: ['', Validators.required],
       descriptionProduct: ['', Validators.required],
       priceProduct: [0, [Validators.required, Validators.min(0.01)]],
@@ -42,13 +43,19 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.proveedores$ = this.proveedorService.obtenerTodos();
+    // Cargar proveedores para el dropdown (admin y empleado tienen permiso de lectura)
+    this.proveedores$ = this.proveedorService.obtenerTodos().pipe(
+      catchError((err) => {
+        console.warn('No se pudieron cargar proveedores, usando lista vacía', err);
+        return of([] as Proveedor[]);
+      })
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.productoEditar) {
-      const proveedorId = typeof this.productoEditar.proveedor === 'object' 
-        ? (this.productoEditar.proveedor as any)?._id 
+      const proveedorId = typeof this.productoEditar.proveedor === 'object'
+        ? (this.productoEditar.proveedor as any)?._id
         : this.productoEditar.proveedor;
 
       this.form.patchValue({
@@ -123,7 +130,7 @@ export function codigoProductoValidator(control: AbstractControl): ValidationErr
 
   // Regex: Empieza con PROD- seguido de uno o más números
   const pattern = /^PROD-\d+$/;
-  
+
   if (!pattern.test(codigo)) {
     return { codigoInvalido: true };
   }

@@ -1,0 +1,18 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Gestión de Proveedores</h2>
+    <p>Administra la información de los proveedores del supermercado</p>
+  </div>
+
+  <!-- Formulario de Proveedor -->
+  <app-proveedor-form
+    [proveedorEditar]="proveedorEditar"
+    (guardar)="onProveedorGuardado()"
+    (cancelar)="cancelarEdicion()"
+  ></app-proveedor-form>
+
+  <!-- Lista de Proveedores -->
+  <app-proveedor-list
+    (editar)="setEditProveedor($event)"
+  ></app-proveedor-list>
+</div>

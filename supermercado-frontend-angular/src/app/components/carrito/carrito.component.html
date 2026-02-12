@@ -1,0 +1,130 @@
+<div class="carrito-container">
+  <!-- Header -->
+  <div class="carrito-header">
+    <h2>Mi Carrito de Compras</h2>
+    <p *ngIf="!isEmpty()">{{ cantidadTotal() }} producto<span *ngIf="cantidadTotal() !== 1">s</span> en tu carrito</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-cart" *ngIf="isEmpty()">
+    <div class="empty-icon">🛒</div>
+    <h3>Tu carrito está vacío</h3>
+    <p>Agrega productos desde nuestro catálogo</p>
+    <button class="btn-primary" (click)="continuarComprando()">
+      Ver Catálogo
+    </button>
+  </div>
+
+  <!-- Carrito con items -->
+  <div class="cart-content" *ngIf="!isEmpty()">
+    <!-- Lista de items -->
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of items()">
+        <!-- Imagen placeholder -->
+        <div class="item-image">
+          <span class="product-icon">📦</span>
+        </div>
+
+        <!-- Información del producto -->
+        <div class="item-info">
+          <h3 class="item-name">{{ item.nameProduct }}</h3>
+          <p class="item-code">Código: {{ item.codeProduct }}</p>
+          <p class="item-price">Precio: ${{ item.priceProduct.toFixed(2) }}</p>
+
+          <!-- Stock warning -->
+          <div class="stock-warning" *ngIf="item.stockDisponible === 0">
+            ⚠️ Sin stock disponible
+          </div>
+          <div class="stock-warning low-stock" *ngIf="item.stockDisponible > 0 && item.stockDisponible < 5">
+            ⚠️ Solo quedan {{ item.stockDisponible }} unidades
+          </div>
+        </div>
+
+        <!-- Controles de cantidad -->
+        <div class="item-quantity">
+          <label>Cantidad:</label>
+          <div class="quantity-controls">
+            <button
+              class="qty-btn"
+              (click)="decrementarCantidad(item.codeProduct)"
+              [disabled]="item.cantidad <= 1"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              class="qty-input"
+              [value]="item.cantidad"
+              (change)="actualizarCantidad(item.codeProduct, $event)"
+              min="1"
+              [max]="item.stockDisponible"
+            />
+            <button
+              class="qty-btn"
+              (click)="incrementarCantidad(item.codeProduct)"
+              [disabled]="item.cantidad >= item.stockDisponible"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Subtotal y acciones -->
+        <div class="item-actions">
+          <div class="item-subtotal">
+            <span class="subtotal-label">Subtotal:</span>
+            <span class="subtotal-value">${{ item.subtotal.toFixed(2) }}</span>
+          </div>
+          <button
+            class="btn-remove"
+            (click)="removerProducto(item)"
+            title="Eliminar del carrito"
+          >
+            🗑️ Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen del carrito -->
+    <div class="cart-summary">
+      <div class="summary-card">
+        <h3>Resumen del Pedido</h3>
+
+        <div class="summary-row">
+          <span>Subtotal ({{ cantidadTotal() }} items):</span>
+          <span>${{ total().toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-row total-row">
+          <span><strong>Total:</strong></span>
+          <span class="total-amount"><strong>${{ total().toFixed(2) }}</strong></span>
+        </div>
+
+        <!-- Mensaje de advertencia -->
+        <div class="warning-message" *ngIf="getMensajeAdvertencia()">
+          <p>{{ getMensajeAdvertencia() }}</p>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="summary-actions">
+          <button
+            class="btn-checkout"
+            (click)="procederAlCheckout()"
+            [disabled]="!puedeCheckout()"
+          >
+            Proceder al Pago
+          </button>
+
+          <button class="btn-continue" (click)="continuarComprando()">
+            Continuar Comprando
+          </button>
+
+          <button class="btn-clear" (click)="limpiarCarrito()">
+            Vaciar Carrito
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

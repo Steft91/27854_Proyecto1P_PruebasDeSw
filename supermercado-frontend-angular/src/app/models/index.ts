@@ -1,11 +1,13 @@
+export interface UserInfo {
+  id: string;
+  username: string;
+  email: string;
+  rol: 'administrador' | 'empleado' | 'cliente';
+}
+
 export interface AuthResponse {
   token: string;
-  user?: {
-    id: string;
-    username: string;
-    email: string;
-    rol: string;
-  };
+  user: UserInfo;
   msg?: string;
 }
 
@@ -47,3 +49,5 @@ export interface Empleado {
   direccionEmpleado?: string;
   sueldoEmpleado: number;
 }
+
+export * from './carrito.model';

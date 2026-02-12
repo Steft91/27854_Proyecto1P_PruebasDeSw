@@ -1,0 +1,142 @@
+<div class="pedidos-container">
+  <!-- Header -->
+  <div class="pedidos-header">
+    <h2>Mis Pedidos</h2>
+    <p>Historial de todos tus pedidos realizados</p>
+  </div>
+
+  <!-- Filtros por estado -->
+  <div class="filtros-estado" *ngIf="!isLoading() && !errorMessage()">
+    <button
+      class="filtro-btn"
+      [class.active]="filtroEstado() === 'todos'"
+      (click)="cambiarFiltro('todos')"
+    >
+      Todos ({{ contarPorEstado('todos') }})
+    </button>
+    <button
+      class="filtro-btn"
+      [class.active]="filtroEstado() === 'pendiente'"
+      (click)="cambiarFiltro('pendiente')"
+    >
+      ⏱️ Pendientes ({{ contarPorEstado('pendiente') }})
+    </button>
+    <button
+      class="filtro-btn"
+      [class.active]="filtroEstado() === 'procesando'"
+      (click)="cambiarFiltro('procesando')"
+    >
+      📦 En Proceso ({{ contarPorEstado('procesando') }})
+    </button>
+    <button
+      class="filtro-btn"
+      [class.active]="filtroEstado() === 'completado'"
+      (click)="cambiarFiltro('completado')"
+    >
+      ✅ Completados ({{ contarPorEstado('completado') }})
+    </button>
+    <button
+      class="filtro-btn"
+      [class.active]="filtroEstado() === 'cancelado'"
+      (click)="cambiarFiltro('cancelado')"
+    >
+      ❌ Cancelados ({{ contarPorEstado('cancelado') }})
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>Cargando tus pedidos...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="errorMessage() && !isLoading()">
+    <p class="error-message">{{ errorMessage() }}</p>
+    <button class="btn-retry" (click)="cargarPedidos()" *ngIf="errorMessage() !== 'Sesión expirada. Redirigiendo al login...'">
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading() && !errorMessage() && pedidosFiltrados().length === 0 && pedidos().length === 0">
+    <div class="empty-icon">📋</div>
+    <h3>No has realizado pedidos aún</h3>
+    <p>Explora nuestro catálogo y realiza tu primera compra</p>
+    <button class="btn-primary" (click)="router.navigate(['/cliente/catalogo'])">
+      Ver Catálogo
+    </button>
+  </div>
+
+  <!-- No results for filter -->
+  <div class="empty-state" *ngIf="!isLoading() && !errorMessage() && pedidosFiltrados().length === 0 && pedidos().length > 0">
+    <div class="empty-icon">🔍</div>
+    <h3>No hay pedidos {{ getEstadoTexto(filtroEstado()).toLowerCase() }}s</h3>
+    <p>Intenta con otro filtro</p>
+    <button class="btn-secondary" (click)="cambiarFiltro('todos')">
+      Ver Todos los Pedidos
+    </button>
+  </div>
+
+  <!-- Lista de pedidos -->
+  <div class="pedidos-list" *ngIf="!isLoading() && !errorMessage() && pedidosFiltrados().length > 0">
+    <div
+      class="pedido-card"
+      *ngFor="let pedido of pedidosFiltrados()"
+      (click)="verDetalle(pedido)"
+    >
+      <!-- Header del pedido -->
+      <div class="pedido-header">
+        <div class="pedido-info">
+          <h3 class="pedido-numero">Pedido {{ getNumeroPedido(pedido._id) }}</h3>
+          <p class="pedido-fecha">{{ formatearFecha(pedido.createdAt) }}</p>
+        </div>
+
+        <div class="pedido-estado" [ngClass]="getEstadoClass(pedido.estado)">
+          <span class="estado-icon">{{ getEstadoIcon(pedido.estado) }}</span>
+          <span class="estado-texto">{{ getEstadoTexto(pedido.estado) }}</span>
+        </div>
+      </div>
+
+      <!-- Items del pedido (preview) -->
+      <div class="pedido-items">
+        <div class="items-preview">
+          <span *ngFor="let item of pedido.items; let i = index">
+            {{ item.nombreProducto }}
+            <span class="item-cantidad">(x{{ item.cantidad }})</span>
+            <span *ngIf="i < pedido.items.length - 1">, </span>
+          </span>
+        </div>
+        <p class="items-total">{{ pedido.items.length }} producto<span *ngIf="pedido.items.length !== 1">s</span></p>
+      </div>
+
+      <!-- Datos de entrega -->
+      <div class="pedido-entrega">
+        <p><strong>📍 Dirección:</strong> {{ pedido.datosEntrega.direccion }}</p>
+        <p><strong>📞 Teléfono:</strong> {{ pedido.datosEntrega.telefono }}</p>
+      </div>
+
+      <!-- Footer del pedido -->
+      <div class="pedido-footer">
+        <div class="pedido-total">
+          <span class="total-label">Total:</span>
+          <span class="total-amount">${{ pedido.total.toFixed(2) }}</span>
+        </div>
+
+        <div class="pedido-actions">
+          <button
+            class="btn-cancel"
+            *ngIf="puedeCancelar(pedido)"
+            (click)="cancelarPedido(pedido, $event)"
+          >
+            Cancelar Pedido
+          </button>
+
+          <button class="btn-details">
+            Ver Detalles →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

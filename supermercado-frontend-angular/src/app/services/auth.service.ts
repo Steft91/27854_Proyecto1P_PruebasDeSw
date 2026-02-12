@@ -1,9 +1,10 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AuthResponse } from '../models';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
+    private userService: UserService
   ) {}
 
   login(credentials: { username: string; password: string }): Observable<AuthResponse> {
@@ -19,8 +21,10 @@ export class AuthService {
       tap((response) => {
         if (response.token) {
           localStorage.setItem('token', response.token);
+          // Guardar información del usuario completa (incluyendo rol)
+          this.userService.setUser(response.user);
         }
-      }),
+      })
     );
   }
 
@@ -35,6 +39,8 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('token');
+    // Limpiar información del usuario
+    this.userService.clearUser();
     // Usamos this.document en lugar de window directo
     this.document.location.reload();
   }

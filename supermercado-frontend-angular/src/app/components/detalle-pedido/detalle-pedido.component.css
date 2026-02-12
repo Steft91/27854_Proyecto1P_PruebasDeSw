@@ -1,0 +1,406 @@
+.detalle-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Loading state */
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error state */
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #fee;
+  border-radius: 8px;
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* Header */
+.detalle-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.btn-back {
+  background-color: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-back:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.header-info h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+.pedido-fecha {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.pedido-estado {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.estado-pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.estado-procesando {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.estado-completado {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.estado-cancelado {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+/* Main content */
+.detalle-main {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Section cards */
+.section-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-card h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.75rem;
+}
+
+/* Productos list */
+.productos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.producto-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.producto-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.producto-image {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.producto-nombre {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.producto-code,
+.producto-precio {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.producto-quantity,
+.producto-subtotal {
+  text-align: center;
+}
+
+.quantity-label,
+.subtotal-label {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.quantity-value {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.subtotal-value {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+/* Productos total */
+.productos-total {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.total-row.final {
+  border-top: 2px solid #f0f0f0;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+}
+
+.total-amount {
+  font-size: 1.8rem;
+  color: var(--success-color);
+}
+
+/* Info sidebar */
+.info-group {
+  margin-bottom: 1.5rem;
+}
+
+.info-group:last-child {
+  margin-bottom: 0;
+}
+
+.info-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.info-group p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Actions */
+.action-group {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-cancel-pedido {
+  width: 100%;
+  background-color: transparent;
+  color: var(--danger-color);
+  border: 2px solid var(--danger-color);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-pedido:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.cancel-note {
+  margin: 0.75rem 0 0 0;
+  font-size: 0.85rem;
+  color: #999;
+  text-align: center;
+}
+
+.info-note {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.info-note p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Info adicional */
+.info-adicional h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: var(--primary-color);
+  border: none;
+  padding: 0;
+}
+
+.info-adicional h3:not(:first-child) {
+  margin-top: 1.5rem;
+}
+
+.info-adicional p {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .detalle-main {
+    grid-template-columns: 1fr;
+  }
+
+  .detalle-header {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .btn-back {
+    width: fit-content;
+  }
+
+  .pedido-estado {
+    width: fit-content;
+  }
+
+  .producto-item {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .producto-quantity,
+  .producto-subtotal {
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .quantity-label,
+  .subtotal-label {
+    margin: 0;
+  }
+
+  .quantity-value,
+  .subtotal-value {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .section-card {
+    padding: 1rem;
+  }
+
+  .producto-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .producto-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .product-icon {
+    font-size: 1.5rem;
+  }
+}

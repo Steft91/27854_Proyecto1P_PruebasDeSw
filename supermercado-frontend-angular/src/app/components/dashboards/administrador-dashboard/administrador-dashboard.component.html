@@ -1,0 +1,65 @@
+<!-- Header (Fixed) -->
+<app-header
+  [userName]="userName()"
+  [userRole]="userRole()"
+  (logout)="onLogout()"
+></app-header>
+
+<!-- Sidebar (Fixed) -->
+<app-sidebar
+  [navItems]="navItems"
+  basePath="/admin"
+></app-sidebar>
+
+<!-- Dashboard Container -->
+<div class="dashboard-container">
+  <!-- Main Layout -->
+  <div class="dashboard-layout">
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Welcome Section with Stats -->
+      <div class="welcome-section">
+        <div class="welcome-header">
+          <h2>Panel de Administrador</h2>
+          <p>Bienvenido, {{ userName() }}. Tienes acceso total al sistema.</p>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+        <app-stats-card
+          title="Total Clientes"
+          [value]="totalClientes()"
+          icon="👥"
+          color="primary"
+        ></app-stats-card>
+
+        <app-stats-card
+          title="Total Empleados"
+          [value]="totalEmpleados()"
+          icon="👔"
+          color="secondary"
+        ></app-stats-card>
+
+        <app-stats-card
+          title="Total Productos"
+          [value]="totalProductos()"
+          icon="📦"
+          color="success"
+        ></app-stats-card>
+
+        <app-stats-card
+          title="Total Proveedores"
+          [value]="totalProveedores()"
+          icon="🏭"
+          color="warning"
+        ></app-stats-card>
+        </div>
+      </div>
+
+      <!-- Child Routes Content -->
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

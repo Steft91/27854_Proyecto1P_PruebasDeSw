@@ -1,23 +1,27 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule], // <--- Cambiado a ReactiveFormsModule
-  templateUrl: './register.component.html'
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  @Output() cancel = new EventEmitter<void>();
-  @Output() registerSuccess = new EventEmitter<void>();
-
   registerForm: FormGroup;
   isSubmitting = false;
   errorMsg = '';
+  successMsg = '';
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]], // Validador de email nativo
@@ -51,23 +55,22 @@ export class RegisterComponent {
 
     this.authService.register(payload).subscribe({
       next: () => {
-        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
         this.isSubmitting = false;
-        this.registerSuccess.emit();
-        this.registerForm.reset();
+        this.successMsg = '¡Registro exitoso! Redirigiendo a inicio de sesión...';
+        this.errorMsg = '';
+
+        // Redirigir a login después de 2 segundos
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
       },
       error: (err) => {
         console.error(err);
         this.errorMsg = err.error?.message || err.error?.msg || 'Error al registrar usuario.';
         this.isSubmitting = false;
+        this.successMsg = '';
       }
     });
-  }
-
-  onCancel() {
-    this.registerForm.reset();
-    this.errorMsg = '';
-    this.cancel.emit();
   }
 
   // Helpers para el HTML

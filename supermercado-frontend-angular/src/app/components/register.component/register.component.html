@@ -1,70 +1,115 @@
-<div class="register-container">
-  <h3>Registro de Usuario</h3>
-  
-  <div *ngIf="errorMsg" class="alert alert-danger">
-    {{ errorMsg }}
-  </div>
-
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-    
-    <div class="form-group">
-      <label>Nombre de Usuario</label>
-      <input type="text" formControlName="username" class="form-control" 
-            [class.is-invalid]="isFieldInvalid('username')">
-      <div *ngIf="isFieldInvalid('username')" class="invalid-feedback">
-        El nombre es requerido (mínimo 3 caracteres).
-      </div>
+<div class="register-page-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h1>Crear Cuenta</h1>
+      <p class="subtitle">Sistema de Gestión - Supermercado</p>
     </div>
 
-    <div class="form-group">
-      <label>Correo Electrónico</label>
-      <input type="email" formControlName="email" class="form-control" 
-            [class.is-invalid]="isFieldInvalid('email')">
-      <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
-        Ingresa un correo válido.
-      </div>
+    <!-- Mensaje de éxito -->
+    <div *ngIf="successMsg" class="alert alert-success">
+      {{ successMsg }}
     </div>
 
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" formControlName="password" class="form-control" 
-            [class.is-invalid]="isFieldInvalid('password')">
-      <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
-        Mínimo 6 caracteres.
-      </div>
+    <!-- Mensaje de error -->
+    <div *ngIf="errorMsg" class="alert alert-danger">
+      {{ errorMsg }}
     </div>
 
-    <div class="form-group">
-      <label>Confirmar Contraseña</label>
-      <input type="password" formControlName="confirmPassword" class="form-control" 
-            [class.is-invalid]="isFieldInvalid('confirmPassword') || hasPasswordMismatch()">
-      <div *ngIf="hasPasswordMismatch()" class="invalid-feedback" style="display:block">
-        Las contraseñas no coinciden.
-      </div>
-    </div>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
 
-    <div class="form-group">
-      <label>Rol</label>
-      <select formControlName="rol" class="form-control" 
-              [class.is-invalid]="isFieldInvalid('rol')">
-        <option value="">-- Seleccionar --</option>
-        <option value="cliente">Cliente</option>
-        <option value="administrador">Administrador</option>
-        <option value="empleado">Empleado</option>
+      <div class="form-group">
+        <label for="username">Nombre de Usuario <span class="required">*</span></label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Ingresa tu usuario"
+          [class.is-invalid]="isFieldInvalid('username')"
+          [disabled]="isSubmitting"
+        >
+        <div *ngIf="isFieldInvalid('username')" class="invalid-feedback">
+          El nombre es requerido (mínimo 3 caracteres).
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo Electrónico <span class="required">*</span></label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="correo@ejemplo.com"
+          [class.is-invalid]="isFieldInvalid('email')"
+          [disabled]="isSubmitting"
+        >
+        <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
+          Ingresa un correo válido.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña <span class="required">*</span></label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          [class.is-invalid]="isFieldInvalid('password')"
+          [disabled]="isSubmitting"
+        >
+        <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
+          Mínimo 6 caracteres.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Contraseña <span class="required">*</span></label>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Repite tu contraseña"
+          [class.is-invalid]="isFieldInvalid('confirmPassword') || hasPasswordMismatch()"
+          [disabled]="isSubmitting"
+        >
+        <div *ngIf="hasPasswordMismatch()" class="invalid-feedback" style="display:block">
+          Las contraseñas no coinciden.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="rol">Rol <span class="required">*</span></label>
+        <select
+          id="rol"
+          formControlName="rol"
+          [class.is-invalid]="isFieldInvalid('rol')"
+          [disabled]="isSubmitting"
+        >
+          <option value="">-- Seleccionar --</option>
+          <option value="cliente">Cliente</option>
+          <option value="empleado">Empleado</option>
+          <option value="administrador">Administrador</option>
         </select>
-      <div *ngIf="isFieldInvalid('rol')" class="invalid-feedback">
-        Selecciona un rol.
+        <div *ngIf="isFieldInvalid('rol')" class="invalid-feedback">
+          Selecciona un rol.
+        </div>
       </div>
-    </div>
 
-    <div class="form-actions mt-3">
-      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || registerForm.invalid">
-        {{ isSubmitting ? 'Registrando...' : 'Registrar' }}
+      <button
+        type="submit"
+        class="btn-primary btn-full-width"
+        [disabled]="isSubmitting || registerForm.invalid"
+      >
+        {{ isSubmitting ? 'Registrando...' : 'Crear Cuenta' }}
       </button>
-      <button type="button" class="btn btn-secondary ms-2" (click)="onCancel()" [disabled]="isSubmitting">
-        Cancelar
-      </button>
-    </div>
 
-  </form>
+      <div class="login-link">
+        <p>
+          ¿Ya tienes una cuenta?
+          <a routerLink="/login">Inicia sesión aquí</a>
+        </p>
+      </div>
+
+    </form>
+  </div>
 </div>

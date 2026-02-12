@@ -1,0 +1,143 @@
+<div class="checkout-container">
+  <!-- Header -->
+  <div class="checkout-header">
+    <h2>Finalizar Compra</h2>
+    <p>Completa tus datos de entrega para confirmar el pedido</p>
+  </div>
+
+  <div class="checkout-content">
+    <!-- Formulario de entrega -->
+    <div class="delivery-form">
+      <div class="form-card">
+        <h3>📍 Datos de Entrega</h3>
+
+        <!-- Error message -->
+        <div class="error-alert" *ngIf="errorMessage">
+          <p>⚠️ {{ errorMessage }}</p>
+        </div>
+
+        <!-- Warning si hay items sin stock -->
+        <div class="warning-alert" *ngIf="hayItemsSinStock()">
+          <p>⚠️ Algunos productos en tu carrito no tienen stock disponible. Por favor, vuelve al carrito y actualízalo.</p>
+          <button class="btn-warning" (click)="volverAlCarrito()">
+            Volver al Carrito
+          </button>
+        </div>
+
+        <form (ngSubmit)="confirmarPedido()" #checkoutForm="ngForm">
+          <!-- Dirección -->
+          <div class="form-group">
+            <label for="direccion">
+              Dirección de Entrega <span class="required">*</span>
+            </label>
+            <textarea
+              id="direccion"
+              name="direccion"
+              [(ngModel)]="direccion"
+              required
+              rows="3"
+              placeholder="Ej: Calle Principal 123, Edificio A, Apto 4B"
+              class="form-control"
+              [disabled]="isProcessing || hayItemsSinStock()"
+            ></textarea>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="form-group">
+            <label for="telefono">
+              Teléfono de Contacto <span class="required">*</span>
+            </label>
+            <input
+              type="tel"
+              id="telefono"
+              name="telefono"
+              [(ngModel)]="telefono"
+              required
+              placeholder="Ej: +593 99 123 4567"
+              class="form-control"
+              [disabled]="isProcessing || hayItemsSinStock()"
+            />
+          </div>
+
+          <!-- Notas adicionales -->
+          <div class="form-group">
+            <label for="notas">
+              Notas Adicionales (Opcional)
+            </label>
+            <textarea
+              id="notas"
+              name="notas"
+              [(ngModel)]="notas"
+              rows="3"
+              placeholder="Indicaciones especiales, referencias, horario preferido de entrega, etc."
+              class="form-control"
+              [disabled]="isProcessing || hayItemsSinStock()"
+            ></textarea>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="volverAlCarrito()"
+              [disabled]="isProcessing"
+            >
+              ← Volver al Carrito
+            </button>
+
+            <button
+              type="submit"
+              class="btn-primary"
+              [disabled]="isProcessing || !checkoutForm.valid || hayItemsSinStock()"
+            >
+              <span *ngIf="!isProcessing">Confirmar Pedido</span>
+              <span *ngIf="isProcessing">Procesando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Resumen del pedido -->
+    <div class="order-summary">
+      <div class="summary-card">
+        <h3>📦 Resumen del Pedido</h3>
+
+        <!-- Items del pedido -->
+        <div class="summary-items">
+          <div class="summary-item" *ngFor="let item of items()">
+            <div class="item-details">
+              <p class="item-name">{{ item.nameProduct }}</p>
+              <p class="item-quantity">{{ item.cantidad }} x ${{ item.priceProduct.toFixed(2) }}</p>
+            </div>
+            <div class="item-subtotal">
+              ${{ item.subtotal.toFixed(2) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <!-- Totales -->
+        <div class="summary-totals">
+          <div class="summary-row">
+            <span>Subtotal ({{ cantidadTotal() }} items):</span>
+            <span>${{ total().toFixed(2) }}</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span><strong>Total a Pagar:</strong></span>
+            <span class="total-amount"><strong>${{ total().toFixed(2) }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Info adicional -->
+        <div class="summary-info">
+          <p>💳 El pago se realizará contra entrega</p>
+          <p>🚚 Tiempo estimado de entrega: 24-48 horas</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

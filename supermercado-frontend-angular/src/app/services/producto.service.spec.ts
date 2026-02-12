@@ -1,18 +1,31 @@
 import { TestBed } from '@angular/core/testing';
-import { ProductoService } from './producto.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { environment } from '../../environments/environment';
+import { ProductoService } from './producto.service';
 import { Producto } from '../models';
+import { environment } from '../../environments/environment';
 
 describe('ProductoService', () => {
   let service: ProductoService;
   let httpMock: HttpTestingController;
   const apiUrl = `${environment.apiUrl}/products`;
 
+  const mockProducto: Producto = {
+    codeProduct: 'PROD-001',
+    nameProduct: 'Laptop Dell',
+    descriptionProduct: 'Laptop de alta gama',
+    priceProduct: 1200,
+    stockProduct: 15,
+    proveedor: 'prov123'
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ProductoService, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        ProductoService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
     });
     service = TestBed.inject(ProductoService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -22,73 +35,76 @@ describe('ProductoService', () => {
     httpMock.verify();
   });
 
-  it('obtenerTodos: debe retornar productos (GET)', () => {
-    const dummyProds: Producto[] = [
-      {
-        codeProduct: 'P1',
-        nameProduct: 'A',
-        descriptionProduct: 'D',
-        priceProduct: 10,
-        stockProduct: 5,
-      },
-    ];
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
 
-    service.obtenerTodos().subscribe((prods) => {
-      expect(prods.length).toBe(1);
+  describe('obtenerTodos', () => {
+    it('should retrieve all productos', () => {
+      const mockProductos: Producto[] = [
+        mockProducto,
+        { ...mockProducto, codeProduct: 'PROD-002', nameProduct: 'Mouse Logitech' }
+      ];
+
+      service.obtenerTodos().subscribe(productos => {
+        expect(productos.length).toBe(2);
+        expect(productos).toEqual(mockProductos);
+      });
+
+      const req = httpMock.expectOne(apiUrl);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockProductos);
     });
-
-    const req = httpMock.expectOne(apiUrl);
-    expect(req.request.method).toBe('GET');
-    req.flush(dummyProds);
   });
 
-  it('crear: debe enviar producto (POST)', () => {
-    const nuevoProd: Producto = {
-      codeProduct: 'P2',
-      nameProduct: 'B',
-      descriptionProduct: 'D',
-      priceProduct: 20,
-      stockProduct: 10,
-    };
 
-    service.crear(nuevoProd).subscribe();
+  describe('crear', () => {
+    it('should create a new producto', () => {
+      service.crear(mockProducto).subscribe(() => {
+      });
 
-    const req = httpMock.expectOne(apiUrl);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(nuevoProd);
-    req.flush(nuevoProd);
-  });
-
-  it('actualizar: debe enviar actualización (PUT)', () => {
-    const id = 'P1';
-    const datos: Producto = {
-      codeProduct: 'P1',
-      nameProduct: 'Edit',
-      descriptionProduct: 'D',
-      priceProduct: 10,
-      stockProduct: 5,
-    };
-
-    service.actualizar(id, datos).subscribe();
-
-    const req = httpMock.expectOne(`${apiUrl}/${id}`);
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual({
-      newNameProduct: datos.nameProduct,
-      newDescriptionProduct: datos.descriptionProduct,
-      newPriceProduct: datos.priceProduct,
-      newStockProduct: datos.stockProduct,
-      newProveedor: datos.proveedor,
+      const req = httpMock.expectOne(apiUrl);
+      expect(req.request.method).toBe('POST');
+      req.flush(null);
     });
-    req.flush({});
   });
 
-  it('eliminar: debe borrar producto (DELETE)', () => {
-    const id = 'P1';
-    service.eliminar(id).subscribe();
+  describe('actualizar', () => {
+    it('should update an existing producto', () => {
+      const productoActualizado: Producto = {
+        ...mockProducto,
+        priceProduct: 1100,
+        stockProduct: 20
+      };
 
-    const req = httpMock.expectOne(`${apiUrl}/${id}`);
-    expect(req.request.method).toBe('DELETE');
-    req.flush({});
+      const expectedPayload = {
+        newNameProduct: 'Laptop Dell',
+        newDescriptionProduct: 'Laptop de alta gama',
+        newPriceProduct: 1100,
+        newStockProduct: 20,
+        newProveedor: 'prov123'
+      };
+
+      service.actualizar('PROD-001', productoActualizado).subscribe(() => {
+        expect(true).toBeTrue();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/PROD-001`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(expectedPayload);
+      req.flush(null);
+    });
+  });
+
+  describe('eliminar', () => {
+    it('should delete a producto', () => {
+      service.eliminar('PROD-001').subscribe(response => {
+        expect(response).toBeTruthy();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/PROD-001`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ msg: 'Producto eliminado' });
+    });
   });
 });

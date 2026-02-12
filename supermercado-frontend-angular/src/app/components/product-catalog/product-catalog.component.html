@@ -1,0 +1,150 @@
+<div class="catalog-container">
+
+  <!-- Header del catálogo -->
+  <div class="catalog-header">
+    <h2>Catálogo de Productos</h2>
+    <p>Encuentra todos nuestros productos disponibles</p>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filters-bar">
+
+    <!-- Búsqueda -->
+    <div class="search-box">
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
+        placeholder="Buscar productos..."
+        class="search-input"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-group">
+
+      <!-- Ordenar por -->
+      <div class="filter-item">
+        <label for="sortBy">Ordenar por:</label>
+        <select
+          id="sortBy"
+          [ngModel]="sortBy()"
+          (ngModelChange)="sortBy.set($event); currentPage.set(1)"
+          class="filter-select"
+        >
+          <option value="name">Nombre</option>
+          <option value="price-asc">Precio: Menor a Mayor</option>
+          <option value="price-desc">Precio: Mayor a Menor</option>
+          <option value="stock">Más Stock</option>
+        </select>
+      </div>
+
+      <!-- Solo con stock -->
+      <div class="filter-item checkbox-filter">
+        <label>
+          <input
+            type="checkbox"
+            [ngModel]="showOnlyInStock()"
+            (ngModelChange)="showOnlyInStock.set($event); currentPage.set(1)"
+          />
+          Solo con stock
+        </label>
+      </div>
+
+      <!-- Botón limpiar filtros -->
+      <button
+        class="btn-clear-filters"
+        (click)="limpiarFiltros()"
+        *ngIf="searchTerm() || sortBy() !== 'name' || showOnlyInStock()"
+      >
+        Limpiar filtros
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Resultados info -->
+  <div class="results-info" *ngIf="!isLoading()">
+    <p>
+      Mostrando
+      <strong>{{ productosPaginados().length }}</strong>
+      de
+      <strong>{{ productosFiltrados().length }}</strong>
+      productos
+      <span *ngIf="productosFiltrados().length !== productos().length">
+        ({{ productos().length }} en total)
+      </span>
+    </p>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>Cargando productos...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="productosError() && !isLoading()">
+    <p class="error-message">{{ productosError() }}</p>
+    <button class="btn-retry" (click)="cargarProductos()">
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Grid de productos -->
+  <div class="products-grid" *ngIf="!isLoading() && !productosError()">
+    <app-product-card
+      *ngFor="let producto of productosPaginados()"
+      [producto]="producto"
+      (productoAgregado)="onProductoAgregado($event)"
+    ></app-product-card>
+  </div>
+
+  <!-- Empty state -->
+  <div
+    class="empty-state"
+    *ngIf="!isLoading() && !productosError() && productosFiltrados().length === 0"
+  >
+    <div class="empty-icon">🔍</div>
+    <h3>No se encontraron productos</h3>
+    <p>Intenta con otros términos de búsqueda o ajusta los filtros</p>
+    <button class="btn-clear-filters" (click)="limpiarFiltros()">
+      Ver todos los productos
+    </button>
+  </div>
+
+  <!-- Paginación -->
+  <div
+    class="pagination"
+    *ngIf="!isLoading() && productosFiltrados().length > 0 && totalPages() > 1"
+  >
+    <button
+      class="pagination-btn"
+      (click)="cambiarPagina(currentPage() - 1)"
+      [disabled]="currentPage() === 1"
+    >
+      ← Anterior
+    </button>
+
+    <div class="pagination-pages">
+      <button
+        *ngFor="let page of [].constructor(totalPages()); let i = index"
+        class="pagination-page"
+        [class.active]="(i + 1) === currentPage()"
+        (click)="cambiarPagina(i + 1)"
+      >
+        {{ i + 1 }}
+      </button>
+    </div>
+
+    <button
+      class="pagination-btn"
+      (click)="cambiarPagina(currentPage() + 1)"
+      [disabled]="currentPage() === totalPages()"
+    >
+      Siguiente →
+    </button>
+  </div>
+
+</div>

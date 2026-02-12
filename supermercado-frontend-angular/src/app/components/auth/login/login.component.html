@@ -1,0 +1,61 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>🛒 Sistema de Gestión</h1>
+      <p class="subtitle">Supermercado - Inicio de Sesión</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()" class="login-form">
+
+      <!-- Mensaje de error -->
+      <div *ngIf="loginError()" class="alert alert-danger">
+        {{ loginError() }}
+      </div>
+
+      <!-- Campo Usuario -->
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input
+          id="username"
+          type="text"
+          name="username"
+          [(ngModel)]="loginData.username"
+          placeholder="Ingresa tu usuario"
+          [disabled]="isLoading()"
+          required
+        />
+      </div>
+
+      <!-- Campo Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          [(ngModel)]="loginData.password"
+          placeholder="Ingresa tu contraseña"
+          [disabled]="isLoading()"
+          required
+        />
+      </div>
+
+      <!-- Botón -->
+      <button
+        type="submit"
+        class="btn-primary btn-full-width"
+        [disabled]="isLoading()"
+      >
+        <span *ngIf="!isLoading()">Iniciar Sesión</span>
+        <span *ngIf="isLoading()">Cargando...</span>
+      </button>
+
+      <div class="register-link">
+        <p>
+          ¿No tienes una cuenta?
+          <a routerLink="/register">Regístrate aquí</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

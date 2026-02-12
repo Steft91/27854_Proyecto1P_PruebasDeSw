@@ -4,6 +4,8 @@ import { AuthService } from '../../services/auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
@@ -15,9 +17,10 @@ describe('RegisterComponent', () => {
     authServiceMock.register.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent, ReactiveFormsModule], 
+      imports: [RegisterComponent, ReactiveFormsModule],
       providers: [
-        { provide: AuthService, useValue: authServiceMock }
+        { provide: AuthService, useValue: authServiceMock },
+        provideRouter([])
       ]
     }).compileComponents();
 

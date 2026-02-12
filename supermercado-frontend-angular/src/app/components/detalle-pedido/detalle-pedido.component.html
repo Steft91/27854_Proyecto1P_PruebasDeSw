@@ -1,0 +1,150 @@
+<div class="detalle-container">
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>Cargando detalles del pedido...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="errorMessage() && !isLoading()">
+    <p class="error-message">{{ errorMessage() }}</p>
+    <button class="btn-back" (click)="volverAtras()" *ngIf="errorMessage() !== 'Sesión expirada. Redirigiendo al login...'">
+      ← Volver a Mis Pedidos
+    </button>
+  </div>
+
+  <!-- Detalle del pedido -->
+  <div class="detalle-content" *ngIf="pedido() && !isLoading() && !errorMessage()">
+    <!-- Header -->
+    <div class="detalle-header">
+      <button class="btn-back" (click)="volverAtras()">
+        ← Volver
+      </button>
+
+      <div class="header-info">
+        <h2>Pedido {{ getNumeroPedido(pedido()!._id) }}</h2>
+        <p class="pedido-fecha">Realizado el {{ formatearFecha(pedido()!.createdAt) }}</p>
+      </div>
+
+      <div class="pedido-estado" [ngClass]="getEstadoClass(pedido()!.estado)">
+        <span class="estado-icon">{{ getEstadoIcon(pedido()!.estado) }}</span>
+        <span class="estado-texto">{{ getEstadoTexto(pedido()!.estado) }}</span>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="detalle-main">
+      <!-- Productos del pedido -->
+      <div class="productos-section">
+        <div class="section-card">
+          <h3>📦 Productos del Pedido</h3>
+
+          <div class="productos-list">
+            <div class="producto-item" *ngFor="let item of pedido()!.items">
+              <div class="producto-info">
+                <div class="producto-image">
+                  <span class="product-icon">📦</span>
+                </div>
+
+                <div class="producto-details">
+                  <h4 class="producto-nombre">{{ item.nombreProducto }}</h4>
+                  <p class="producto-code">Código: {{ item.producto }}</p>
+                  <p class="producto-precio">Precio unitario: ${{ item.precioUnitario.toFixed(2) }}</p>
+                </div>
+              </div>
+
+              <div class="producto-quantity">
+                <p class="quantity-label">Cantidad</p>
+                <p class="quantity-value">{{ item.cantidad }}</p>
+              </div>
+
+              <div class="producto-subtotal">
+                <p class="subtotal-label">Subtotal</p>
+                <p class="subtotal-value">${{ item.subtotal.toFixed(2) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="productos-total">
+            <div class="total-row">
+              <span>Subtotal ({{ pedido()!.items.length }} productos):</span>
+              <span>${{ pedido()!.total.toFixed(2) }}</span>
+            </div>
+            <div class="total-row final">
+              <span><strong>Total del Pedido:</strong></span>
+              <span class="total-amount"><strong>${{ pedido()!.total.toFixed(2) }}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información lateral -->
+      <div class="info-sidebar">
+        <!-- Datos de entrega -->
+        <div class="section-card">
+          <h3>📍 Datos de Entrega</h3>
+
+          <div class="info-group">
+            <label>Dirección:</label>
+            <p>{{ pedido()!.datosEntrega.direccion }}</p>
+          </div>
+
+          <div class="info-group">
+            <label>Teléfono de Contacto:</label>
+            <p>{{ pedido()!.datosEntrega.telefono }}</p>
+          </div>
+
+          <div class="info-group" *ngIf="pedido()!.datosEntrega.notas">
+            <label>Notas Adicionales:</label>
+            <p>{{ pedido()!.datosEntrega.notas }}</p>
+          </div>
+        </div>
+
+        <!-- Estado y acciones -->
+        <div class="section-card">
+          <h3>ℹ️ Información del Pedido</h3>
+
+          <div class="info-group">
+            <label>Estado:</label>
+            <div class="estado-badge" [ngClass]="getEstadoClass(pedido()!.estado)">
+              {{ getEstadoIcon(pedido()!.estado) }} {{ getEstadoTexto(pedido()!.estado) }}
+            </div>
+          </div>
+
+          <div class="info-group">
+            <label>Fecha de Creación:</label>
+            <p>{{ formatearFecha(pedido()!.createdAt) }}</p>
+          </div>
+
+          <div class="info-group" *ngIf="pedido()!.updatedAt !== pedido()!.createdAt">
+            <label>Última Actualización:</label>
+            <p>{{ formatearFecha(pedido()!.updatedAt) }}</p>
+          </div>
+
+          <!-- Acción de cancelar -->
+          <div class="action-group" *ngIf="puedeCancelar()">
+            <button class="btn-cancel-pedido" (click)="cancelarPedido()">
+              ❌ Cancelar Pedido
+            </button>
+            <p class="cancel-note">Solo puedes cancelar pedidos en estado pendiente</p>
+          </div>
+
+          <!-- Info de no cancelable -->
+          <div class="info-note" *ngIf="!puedeCancelar() && pedido()!.estado !== 'cancelado'">
+            <p>Este pedido ya no se puede cancelar porque está siendo procesado o completado.</p>
+          </div>
+        </div>
+
+        <!-- Info adicional -->
+        <div class="section-card info-adicional">
+          <h3>💳 Información de Pago</h3>
+          <p>El pago se realizará contra entrega en efectivo o con tarjeta.</p>
+
+          <h3>🚚 Tiempo de Entrega</h3>
+          <p>Tiempo estimado: 24-48 horas hábiles desde la confirmación del pedido.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
