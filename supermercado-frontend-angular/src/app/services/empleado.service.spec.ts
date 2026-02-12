@@ -22,28 +22,40 @@ describe('EmpleadoService', () => {
   });
 
   it('obtenerTodos: debe retornar lista (GET)', () => {
+    // Arrange: no specific setup needed, service and httpMock are already initialized
+
+    // Act
     service.obtenerTodos().subscribe();
     const req = httpMock.expectOne(apiUrl);
+
+    // Assert
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
 
   it('crear: debe enviar datos (POST)', () => {
+    // Arrange
     const mockData = { cedulaEmpleado: '1', nombreEmpleado: 'A' } as any;
-    service.crear(mockData).subscribe();
 
+    // Act
+    service.crear(mockData).subscribe();
     const req = httpMock.expectOne(apiUrl);
+
+    // Assert
     expect(req.request.method).toBe('POST');
     req.flush({});
   });
 
   it('actualizar: debe enviar datos transformados (PUT)', () => {
+    // Arrange
     const id = '1';
     const mockData = { nombreEmpleado: 'B' } as any;
 
+    // Act
     service.actualizar(id, mockData).subscribe();
-
     const req = httpMock.expectOne(`${apiUrl}/${id}`);
+
+    // Assert
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual(
       jasmine.objectContaining({
@@ -54,10 +66,14 @@ describe('EmpleadoService', () => {
   });
 
   it('eliminar: debe borrar (DELETE)', () => {
+    // Arrange
     const id = '1';
-    service.eliminar(id).subscribe();
 
+    // Act
+    service.eliminar(id).subscribe();
     const req = httpMock.expectOne(`${apiUrl}/${id}`);
+
+    // Assert
     expect(req.request.method).toBe('DELETE');
     req.flush({});
   });
