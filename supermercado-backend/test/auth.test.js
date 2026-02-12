@@ -1,4 +1,3 @@
-// Prevent actual MongoDB connection
 jest.mock('mongoose', () => {
   const m = jest.requireActual('mongoose');
   m.connect = jest.fn().mockResolvedValue(true);
@@ -48,7 +47,6 @@ beforeEach(() => {
 });
 
 describe('Auth API', () => {
-  // ─── POST /api/auth/register ───
   describe('POST /api/auth/register', () => {
     test('registers user successfully with default role', async () => {
       Usuario.findOne.mockResolvedValue(null);
@@ -65,7 +63,7 @@ describe('Auth API', () => {
 
       expect(res.statusCode).toBe(201);
       expect(res.body.msg).toBe('Usuario creado exitosamente');
-      expect(res.body.rol).toBe('cliente'); // Default role
+      expect(res.body.rol).toBe('cliente');
     });
 
     test('registers user with explicit role', async () => {

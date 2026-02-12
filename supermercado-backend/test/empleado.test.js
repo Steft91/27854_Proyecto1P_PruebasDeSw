@@ -78,7 +78,6 @@ beforeEach(() => {
 });
 
 describe('Empleado API', () => {
-  // ─── GET /api/empleados ───
   describe('GET /api/empleados', () => {
     test('returns list of empleados', async () => {
       // Arrange

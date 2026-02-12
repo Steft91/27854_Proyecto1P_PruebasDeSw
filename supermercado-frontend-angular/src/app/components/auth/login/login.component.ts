@@ -16,8 +16,6 @@ import { ToastService } from '../../../services/toast.service';
 export class LoginComponent {
 
   loginData = { username: '', password: '' };
-
-  // 🔥 Estado reactivo con signals
   loginError = signal<string>('');
   isLoading = signal<boolean>(false);
 

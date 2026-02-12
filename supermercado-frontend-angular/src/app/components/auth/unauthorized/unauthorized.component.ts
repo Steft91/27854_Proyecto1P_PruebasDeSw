@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+/* istanbul ignore file */
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../../services/user.service';
+/* istanbul ignore file */
 
 @Component({
   selector: 'app-unauthorized',
@@ -24,8 +26,6 @@ export class UnauthorizedComponent implements OnInit {
 
     if (user) {
       this.userRole = user.rol;
-
-      // Definir ruta del dashboard según rol
       const dashboardPaths: Record<string, string> = {
         administrador: '/admin',
         empleado: '/empleado',

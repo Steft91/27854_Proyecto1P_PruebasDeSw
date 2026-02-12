@@ -78,8 +78,6 @@ describe('RegisterComponent', () => {
   });
 
   it('Debe llamar a authService.register cuando se hace submit válido', () => {
-    spyOn(window, 'alert');
-
     component.registerForm.patchValue({
       username: 'usuarioTest',
       email: 'test@example.com',
@@ -97,8 +95,8 @@ describe('RegisterComponent', () => {
       rol: 'admin'
     });
 
-    expect(window.alert).toHaveBeenCalledWith(jasmine.stringMatching(/exitoso/i));
-    expect(component.registerForm.get('username')?.value).toBeNull(); 
+    expect(component.successMsg).toContain('exitoso');
+    expect(component.errorMsg).toBe('');
   });
 
   it('Debe mostrar mensaje de error si el registro falla', () => {

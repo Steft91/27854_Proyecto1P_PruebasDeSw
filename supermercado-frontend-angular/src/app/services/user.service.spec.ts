@@ -34,7 +34,7 @@ describe('UserService', () => {
 
       const storedUser = service.getCurrentUser();
       expect(storedUser).toEqual(mockUser);
-      expect(localStorage.getItem('user')).toBe(JSON.stringify(mockUser));
+      expect(localStorage.getItem('user_info')).toBe(JSON.stringify(mockUser));
     });
 
     it('should return null if no user is stored', () => {
@@ -43,7 +43,7 @@ describe('UserService', () => {
     });
 
     it('should return null if stored user JSON is invalid', () => {
-      localStorage.setItem('user', 'invalid-json{');
+      localStorage.setItem('user_info', 'invalid-json{');
       const user = service.getCurrentUser();
       expect(user).toBeNull();
     });
@@ -108,10 +108,10 @@ describe('UserService', () => {
       };
 
       service.setUser(mockUser);
-      expect(localStorage.getItem('user')).toBeTruthy();
+      expect(localStorage.getItem('user_info')).toBeTruthy();
 
       service.clearUser();
-      expect(localStorage.getItem('user')).toBeNull();
+      expect(localStorage.getItem('user_info')).toBeNull();
       expect(service.getCurrentUser()).toBeNull();
     });
   });

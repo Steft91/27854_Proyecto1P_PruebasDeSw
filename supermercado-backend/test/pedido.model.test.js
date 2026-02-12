@@ -27,8 +27,6 @@ describe('Pedido model', () => {
     });
 
     const before = Date.now();
-
-    // Call the exposed middleware function directly to ensure coverage
     if (typeof Pedido._updateUpdatedAt === 'function') {
       await new Promise((resolve) => {
         Pedido._updateUpdatedAt.call(pedido, () => resolve());

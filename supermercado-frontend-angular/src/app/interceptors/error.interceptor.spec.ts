@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
@@ -32,6 +32,7 @@ describe('errorInterceptor', () => {
     } as any;
 
     spyOn(toastService, 'error');
+    spyOn(toastService, 'warning');
     localStorage.clear();
   });
 
@@ -56,8 +57,8 @@ describe('errorInterceptor', () => {
 
       result$.subscribe({
         error: (err) => {
-          expect(toastService.error).toHaveBeenCalledWith(
-            'No tienes permisos para realizar esta acción'
+          expect(toastService.warning).toHaveBeenCalledWith(
+            'No tienes permisos para realizar esta acción.'
           );
           expect(err).toBe(error403);
           done();
@@ -66,7 +67,7 @@ describe('errorInterceptor', () => {
     });
   });
 
-  it('should clear user and redirect to login for 401 Unauthorized error', (done) => {
+  it('should clear user and redirect to login for 401 Unauthorized error', fakeAsync(() => {
     userService.setUser({
       id: '123',
       username: 'test',
@@ -93,13 +94,16 @@ describe('errorInterceptor', () => {
           expect(toastService.error).toHaveBeenCalledWith('Sesión expirada. Por favor, inicia sesión nuevamente.');
           expect(userService.getCurrentUser()).toBeNull();
           expect(localStorage.getItem('token')).toBeNull();
-          expect(router.navigate).toHaveBeenCalledWith(['/login']);
           expect(err).toBe(error401);
-          done();
+
+          // Wait for setTimeout to execute
+          tick(1500);
+
+          expect(router.navigate).toHaveBeenCalledWith(['/login']);
         }
       });
     });
-  });
+  }));
 
   it('should show generic error for 500 Server Error', (done) => {
     const error500 = new HttpErrorResponse({
@@ -119,7 +123,7 @@ describe('errorInterceptor', () => {
       result$.subscribe({
         error: (err) => {
           expect(toastService.error).toHaveBeenCalledWith(
-            'Error del servidor. Por favor, intenta más tarde.'
+            'Error del servidor. Intenta nuevamente más tarde.'
           );
           expect(err).toBe(error500);
           done();
@@ -155,7 +159,7 @@ describe('errorInterceptor', () => {
     });
   });
 
-  it('should show specific error message if provided by server', (done) => {
+  it('should not show toast for 400 errors (let component handle it)', (done) => {
     const error400 = new HttpErrorResponse({
       error: { message: 'Validation failed' },
       status: 400,
@@ -172,7 +176,9 @@ describe('errorInterceptor', () => {
 
       result$.subscribe({
         error: (err) => {
-          expect(toastService.error).toHaveBeenCalledWith('Validation failed');
+          // 400 errors should not trigger toasts - component handles them
+          expect(toastService.error).not.toHaveBeenCalled();
+          expect(toastService.warning).not.toHaveBeenCalled();
           expect(err).toBe(error400);
           done();
         }

@@ -29,13 +29,10 @@ export class CheckoutComponent implements OnInit {
   cantidadTotal(): number {
     return this.carritoService.cantidadTotal();
   }
-
-  // Datos del formulario
   direccion: string = '';
   telefono: string = '';
   notas: string = '';
 
-  // Estado
   isProcessing: boolean = false;
   errorMessage: string | null = null;
 
@@ -46,7 +43,6 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Redirigir si el carrito está vacío
     if (this.carritoService.isEmpty()) {
       this.router.navigate(['/cliente/carrito']);
     }
@@ -65,8 +61,6 @@ export class CheckoutComponent implements OnInit {
       this.errorMessage = 'El teléfono es obligatorio';
       return false;
     }
-
-    // Validación básica de teléfono (solo números y algunos caracteres)
     const telefonoRegex = /^[\d\s\-\+\(\)]+$/;
     if (!telefonoRegex.test(this.telefono)) {
       this.errorMessage = 'El teléfono solo debe contener números y caracteres válidos';
@@ -87,14 +81,10 @@ export class CheckoutComponent implements OnInit {
 
     this.isProcessing = true;
     this.errorMessage = null;
-
-    // Preparar items para el pedido
     const itemsPedido: ItemPedido[] = this.items().map(item => ({
       producto: item.codeProduct,
       cantidad: item.cantidad
     }));
-
-    // Preparar DTO del pedido
     const pedidoData: CrearPedidoDTO = {
       items: itemsPedido,
       datosEntrega: {
@@ -104,18 +94,13 @@ export class CheckoutComponent implements OnInit {
       }
     };
 
-    // Enviar pedido al backend
     this.pedidoService.crearPedido(pedidoData).subscribe({
       next: (response) => {
         console.log('Pedido creado exitosamente:', response);
 
-        // Limpiar el carrito
         this.carritoService.limpiarCarrito();
-
-        // Mostrar mensaje de éxito y redirigir
         alert(`¡Pedido realizado exitosamente!\n\nNúmero de pedido: ${response.pedido._id}\nTotal: $${response.pedido.total.toFixed(2)}`);
 
-        // Redirigir a la página de pedidos
         this.router.navigate(['/cliente/pedidos']);
       },
       error: (error) => {

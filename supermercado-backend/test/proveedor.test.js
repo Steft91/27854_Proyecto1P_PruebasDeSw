@@ -1,4 +1,3 @@
-// Prevent actual MongoDB connection
 jest.mock('mongoose', () => {
   const m = jest.requireActual('mongoose');
   m.connect = jest.fn().mockResolvedValue(true);

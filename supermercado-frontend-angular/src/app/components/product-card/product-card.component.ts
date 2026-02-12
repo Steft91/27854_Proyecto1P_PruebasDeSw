@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../models';

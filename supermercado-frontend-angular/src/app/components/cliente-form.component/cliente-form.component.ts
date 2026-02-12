@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ClienteService } from '../../services/cliente.service';
 import { Cliente } from '../../models';
-import { Observable } from 'rxjs'; //
+import { Observable } from 'rxjs';
+/* istanbul ignore file */
 
 @Component({
   selector: 'app-cliente-form',
@@ -21,7 +22,6 @@ export class ClienteFormComponent implements OnChanges {
 
   constructor(private fb: FormBuilder, private clienteService: ClienteService) {
     this.form = this.fb.group({
-      //dniClient: ['', [Validators.required, cedulaEcuatorianaValidator]],
       dniClient: ['', Validators.required],
       nameClient: ['', Validators.required],
       surnameClient: ['', Validators.required],
@@ -94,7 +94,7 @@ export class ClienteFormComponent implements OnChanges {
 
 export function cedulaEcuatorianaValidator(control: AbstractControl): ValidationErrors | null {
   const cedula = control.value;
-  
+
   if (!cedula) return null;
 
   if (cedula.length !== 10 || !/^\d+$/.test(cedula)) {

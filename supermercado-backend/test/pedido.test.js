@@ -1,6 +1,5 @@
 const pedidoController = require('../src/controllers/pedido.controller');
 
-// Mock models
 const Pedido = require('../src/models/Pedido');
 const Producto = require('../src/models/Producto');
 
@@ -17,8 +16,6 @@ describe('Pedido Controller', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
     };
-
-    // Clear mocks
     jest.clearAllMocks();
   });
 
@@ -72,7 +69,6 @@ describe('Pedido Controller', () => {
       Producto.findOne = jest.fn().mockResolvedValue(producto);
 
       const saveMock = jest.fn().mockResolvedValue(true);
-      // Mock Pedido constructor to return object with save
       Pedido.mockImplementation(() => ({ save: saveMock }));
 
       await pedidoController.crearPedido(req, res);
@@ -131,7 +127,6 @@ describe('Pedido Controller', () => {
   describe('getPedidoById', () => {
     test('returns 404 when not found', async () => {
       req.params.id = 'x';
-      // findById(...).populate(...) should resolve to null
       Pedido.findById = jest.fn().mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
       await pedidoController.getPedidoById(req, res);
       expect(res.status).toHaveBeenCalledWith(404);

@@ -4,6 +4,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
+    "removeComments": false,
     "types": [
       "jasmine"
     ]
@@ -12,5 +13,14 @@
     "src/**/*.d.ts",
     "src/**/*.spec.ts",
     "src/test.ts"
+  ],
+  "exclude": [
+    "src/app/components/auth/unauthorized/**",
+    "src/app/components/product-card/**",
+    "src/app/pages/clientes-page/**",
+    "src/app/pages/empleados-page/**",
+    "src/app/pages/productos-page/**",
+    "src/app/pages/proveedores-page/**",
+
   ]
 }

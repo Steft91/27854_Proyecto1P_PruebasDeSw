@@ -111,23 +111,23 @@ describe('ToastService', () => {
 
   describe('multiple toasts', () => {
     it('should handle multiple toasts simultaneously', fakeAsync(() => {
-      service.success('Success 1');
+      service.success('Success 1'); // t=0, removes at t=3000
       tick(500);
-      service.error('Error 1');
+      service.error('Error 1'); // t=500, removes at t=5500 (500 + 5000)
       tick(500);
-      service.warning('Warning 1');
+      service.warning('Warning 1'); // t=1000, removes at t=5000 (1000 + 4000)
 
       expect(service.toasts().length).toBe(3);
 
-      tick(2000); // 3000ms total from first toast
+      tick(2000); // t=3000 - Success removed
 
       expect(service.toasts().length).toBe(2);
 
-      tick(500); // 3000ms total from second toast
+      tick(2000); // t=5000 - Warning removed
 
       expect(service.toasts().length).toBe(1);
 
-      tick(500); // 3000ms total from third toast
+      tick(500); // t=5500 - Error removed
 
       expect(service.toasts().length).toBe(0);
     }));

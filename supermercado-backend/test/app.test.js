@@ -1,4 +1,3 @@
-// Mock mongoose to REJECT connection (covers app.js .catch callback)
 jest.mock('mongoose', () => {
   const m = jest.requireActual('mongoose');
   m.connect = jest.fn().mockRejectedValue(new Error('Connection failed'));
@@ -61,9 +60,6 @@ afterAll(() => {
 
 describe('app.js error paths', () => {
   test('mongoose connect failure triggers .catch callback', () => {
-    // mongoose.connect was called during module loading and rejected,
-    // which triggers the .catch callback (line 25 of app.js)
-    // Coverage is captured by module loading - just verify connect was called
     const mongoose = require('mongoose');
     expect(mongoose.connect).toHaveBeenCalled();
   });
@@ -73,21 +69,17 @@ describe('app.js error paths', () => {
       .post('/api/auth/login')
       .set('Content-Type', 'application/json')
       .send('{ this is invalid json }');
-
-    // Express json parser error should trigger the error handler
     expect([400, 500]).toContain(res.statusCode);
     expect(res.body).toHaveProperty('error');
   });
 
   test('error handler uses default message when err.message is falsy', async () => {
-    // register a test route on an existing mounted router so it runs before app 404
     const clientRoutes = require('../src/routes/cliente.routes');
     clientRoutes.get('/__test/no-message', (req, res, next) => next({}));
 
     const res = await request(app).get('/api/clients/__test/no-message');
     expect(res.status).toBe(500);
     expect(res.body).toHaveProperty('msg', 'Error del servidor');
-    // when err.message is undefined the JSON response will omit the `error` key
     expect(res.body).not.toHaveProperty('error');
   });
 

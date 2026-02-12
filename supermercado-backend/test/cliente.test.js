@@ -1,4 +1,3 @@
-// Prevent actual MongoDB connection
 jest.mock('mongoose', () => {
   const m = jest.requireActual('mongoose');
   m.connect = jest.fn().mockResolvedValue(true);
@@ -39,8 +38,6 @@ const app = require('../src/app');
 const Cliente = require('../src/models/Cliente');
 const Usuario = require('../src/models/Usuario');
 const jwt = require('jsonwebtoken');
-
-// Suppress console
 beforeAll(() => {
   jest.spyOn(console, 'log').mockImplementation(() => {});
   jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -50,9 +47,8 @@ afterAll(() => {
   console.error.mockRestore();
 });
 
-// Valid Ecuadorian cedulas
 const CEDULA_1 = '1713175071';
-const CEDULA_3 = '0601234560'; // verifier = 0 (sum%10===0 branch)
+const CEDULA_3 = '0601234560';
 
 const mockClient = {
   _id: 'c1',

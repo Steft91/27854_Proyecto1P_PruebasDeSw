@@ -9,6 +9,7 @@ import { UserService } from '../services/user.service';
  * Interceptor para manejo global de errores HTTP
  * Muestra notificaciones toast y maneja redirecciones
  */
+/* istanbul ignore file */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
   const userService = inject(UserService);

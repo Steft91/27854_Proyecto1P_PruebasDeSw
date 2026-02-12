@@ -89,13 +89,23 @@ describe('ProveedorService', () => {
         telefonoPrincipal: '+593999999999'
       };
 
+      const expectedPayload = {
+        newNombreFiscal: mockProveedor.nombreFiscal,
+        newRucNitNif: mockProveedor.rucNitNif,
+        newDireccionFisica: mockProveedor.direccionFisica,
+        newTelefonoPrincipal: '+593999999999',
+        newCorreoElectronico: mockProveedor.correoElectronico,
+        newContactoNombre: mockProveedor.contactoNombre,
+        newContactoPuesto: mockProveedor.contactoPuesto
+      };
+
       service.actualizar('1234567890001', proveedorActualizado).subscribe(() => {
         expect(true).toBeTrue();
       });
 
       const req = httpMock.expectOne(`${apiUrl}/1234567890001`);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(proveedorActualizado);
+      expect(req.request.body).toEqual(expectedPayload);
       req.flush(null);
     });
   });

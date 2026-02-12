@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../models';

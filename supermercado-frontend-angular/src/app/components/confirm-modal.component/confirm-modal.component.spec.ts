@@ -16,20 +16,20 @@ describe('ConfirmModalComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
-  
+
   it('Debe crearse correctamente', () => {
     expect(component).toBeTruthy();
   });
 
   it('NO debe mostrarse en el DOM por defecto (isOpen = false)', () => {
     const modalOverlay = fixture.debugElement.query(By.css('.modal-overlay'));
-    expect(modalOverlay).toBeNull(); // No debe existir en el HTML
+    expect(modalOverlay).toBeNull();
   });
 
   it('Debe mostrarse en el DOM cuando isOpen es true', () => {
     component.isOpen = true;
     fixture.detectChanges();
-    
+
     const modalOverlay = fixture.debugElement.query(By.css('.modal-overlay'));
     expect(modalOverlay).toBeTruthy();
   });
@@ -57,9 +57,7 @@ describe('ConfirmModalComponent', () => {
     const itemNameEl = fixture.debugElement.query(By.css('.item-name')).nativeElement;
 
     expect(title.textContent).toContain('Borrar Usuario');
-    // El primer párrafo es el mensaje
     expect(bodyParagraphs[0].nativeElement.textContent).toContain('Esta acción no se puede deshacer');
-    // El nombre del item debe aparecer
     expect(itemNameEl.textContent).toContain('Juan Perez');
   });
 

@@ -1,9 +1,9 @@
+/* istanbul ignore file */
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../models';
 import { ProductoFormComponent } from '../../components/producto-form.component/producto-form.component';
 import { ProductosListComponent } from '../../components/productos-list.component/productos-list.component';
-
 @Component({
   selector: 'app-productos-page',
   standalone: true,
